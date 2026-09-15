@@ -1,0 +1,57 @@
+FAZ 01 — AJANDA
+===============
+Onceki: Faz 00
+Sonraki: Faz 04 (fiyat), Faz 05 (complete)
+Not: Randevuyu yalnizca isletme olusturur — bu fazda da degismez.
+
+HEDEF
+-----
+Takvimi PDF ana modulune yaklastir: gorunur, suruklenebilir, istege bagli oda/koltuk.
+
+
+KAPSAM
+------
+1. Gorunum
+   - Web: gunluk, haftalik, AYLIK
+   - Mevcut calendar bilesenini genislet
+
+2. Surukle-birak
+   - Randevuyu saat veya personel satirina tasi = mevcut reschedule API
+   - Cakisma ve saat kurallari backend'de kalir (kaynak of truth)
+
+3. Resource (oda / koltuk / masa)
+   - Isletme tanimlar, randevuya opsiyonel baglar
+   - Ayni kaynakta cakisma reddedilir
+   - Zorunlu degil; bos birakilabilir
+
+4. STAFF ajandasi
+   - STAFF varsayilan: yalnizca kendi randevulari (liste + takvim)
+   - OWNER/ADMIN: tum personel
+   - ACCOUNTANT: randevu olusturamaz, takvimi gormez (karar: muhasebe yalniz finans)
+
+5. Durumlar
+   - CONFIRMED / COMPLETED / CANCELLED / NO_SHOW ayni kalir
+   - Musteri "bekliyor" self-booking YOK
+   - Odeme beklese bile randevu kaydi isletme tarafindan CONFIRMED acilabilir
+     (odeme durumu ayri alan, Faz 06-07)
+
+
+DISARIDA
+--------
+Urun satisi randevu kartinda, kapora UI (Faz 07), stok.
+
+
+TESLIM
+------
+Web takvimde DnD ile tasiyinca sunucu kaydeder.
+Oda atanan iki randevu ayni anda olamaz.
+Personel sadece kendi ajandasini gorur.
+
+
+DOKUNULACAK YERLER
+------------------
+apps/api/src/appointments/
+apps/web/.../appointment-calendar.tsx
+apps/web/.../appointments/
+Yeni: Resource modeli + API
+apps/mobile: en az resource alani (tam DnD web once)

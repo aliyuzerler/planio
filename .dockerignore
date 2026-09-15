@@ -1,0 +1,16 @@
+.git
+.github
+.next
+**/.next
+**/dist
+**/node_modules
+**/coverage
+apps/mobile
+apps/**/e2e
+**/*.md
+.env
+.env.*
+!.env.example
+docker/postgres_data
+**/.turbo
+**/tsconfig.tsbuildinfo

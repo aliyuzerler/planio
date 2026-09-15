@@ -1,0 +1,55 @@
+FAZ 08 — UYUMSOFT E-FATURA/SMM + TOPLU SMS
+==========================================
+Onceki: Faz 06 (dahili fis + Sale), Faz 04 (kampanya kancasi)
+Sonraki: Faz 09
+
+HEDEF
+-----
+Karar: e-belge IKI katman.
+
+  1) Dahili satis fisi — Faz 06'da uretildi, burada "fatura kes" oncesi her zaman durur
+  2) Uyumsoft — ayni satistan e-Fatura VEYA SMM
+
+Ayrica NetGSM ile riza dahilinde toplu/kampanya SMS.
+
+
+KAPSAM
+------
+1. Hub: Uyumsoft kimlik bilgisi (sifreli, tenant)
+
+2. Belge kesimi
+   - ACCOUNTANT / OWNER: Satis uzerinde "Resmi belge kes"
+   - Tip: E_FATURA | SMM
+   - Uyumsoft API, belge no, PDF URL kaydi
+   - Musteriye e-posta/SMS
+   - Hata kodu log (NetGSM test kaliibi)
+
+3. Iliski
+   - SalesReceipt (dahili) 1 — 0..1 OfficialDocument (Uyumsoft)
+   - Resmi belge kesilmeden fis vardir
+   - Resmi kesilince iptal/iade politikasi belgelenir (Uyumsoft kurallari)
+
+4. Toplu SMS
+   - Alici: riza veren musteriler, filtre (kampanya)
+   - Rate limit, Notification log, ACCOUNTANT gonderemez (OWNER/ADMIN)
+   - Icerik sablon + kampanya duyurusu
+
+
+DISARIDA
+--------
+Gib dogrudan entegrasyon, e-Arsiv ayri ürün (Uyumsoft kapsaminda ne varsa o).
+Stok.
+
+
+TESLIM
+------
+Fis kesili satis -> Uyumsoft SMM/e-Fatura numarasi doner.
+Kampanya listesine toplu SMS gider, riza yoksa gitmez.
+
+
+DOKUNULACAK YERLER
+------------------
+Yeni uyumsoft provider (notification channel kaliibi: sifreli config)
+sales + official document
+web kasa/satis detay butonu
+NetGSM bulk endpoint

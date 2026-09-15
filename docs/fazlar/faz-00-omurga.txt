@@ -1,0 +1,64 @@
+FAZ 00 — OMURGA VE ROL
+======================
+Onceki faz: yok
+Sonraki: Faz 01, 02, 03 (paralel baslanabilir)
+Bagimlilik: 00-kilitli-kararlar.txt
+
+HEDEF
+-----
+PDF kararlarini koda ve PRODUCT.md'ye isle. Kiraci yazma islemleri lisanssiz calisamasin.
+Muhasebe rolu semada dursun (ekranlar Faz 06'da dolar). Personel calisma saatleri panelden girilsin.
+
+
+KAPSAM
+------
+1. docs/PRODUCT.md guncelle
+   - Randevuyu yalnizca isletme olusturur
+   - ACCOUNTANT rolu ve erisim listesi
+   - Kapora / tam / gununde odeme (detay Faz 06-07)
+   - 6 aylik lisans (detay Faz 02)
+   - Stok v1 disi
+   - Dahili fis + Uyumsoft
+
+2. BusinessUserRole'e ACCOUNTANT ekle (Prisma + migration + types + validation)
+   - Davet veya "kullanici olustur" ile hesap: e-posta, parola/davet linki, rol ACCOUNTANT
+   - Guard: ACCOUNTANT yazma/okuma yalnizca ilerideki finans route'lari
+   - Simdilik finans yoksa ACCOUNTANT web'de sinirli ana sayfa + "moduller sonra" veya yalniz profil
+   - Nav gizleme: randevu olustur, personel/hizmet yazma, bildirim kurulumu, Xenior abonelik odemesi
+
+3. Paywall
+   - subscription-access.assertCanUseBusiness yazma endpoint'lerine (randevu, musteri, personel, hizmet)
+   - Suresi biten / EXPIRED / erisimsiz isletme 403 + kod SUBSCRIPTION_REQUIRED
+   - Mevcut e2e: 14 gun TRIALING ile kirilmamali
+
+4. StaffHours
+   - GET/PUT personel saatleri (isletme saatleri kaliibi)
+   - Web: personel detayinda haftalik saat
+   - hoursEnforced aciksa hem isletme hem personel saati randevuda dogrulanir (kismi kod var)
+
+5. Admin
+   - Suresi dolmus / askidaki isletmeyi listede net goster
+
+
+DISARIDA
+--------
+Kasa, prim, POS, e-fatura, takvim DnD, 6 aylik seed (Faz 02).
+
+
+TESLIM
+------
+- ACCOUNTANT kullanici giris yapar, operasyon menuleri kapali
+- Lisanssiz isletme randevu acamaz
+- Personel calisma saatleri kaydedilir
+- Test: rol guard + paywall + staff hours + mevcut randevu e2e
+
+
+DOKUNULACAK YERLER (mevcut)
+---------------------------
+packages/database/prisma/schema.prisma
+apps/api/src/authorization/
+apps/api/src/subscriptions/subscription-access.service.ts
+apps/api/src/staff/
+apps/api/src/auth/ (davet ACCOUNTANT)
+apps/web nav + staff detay
+docs/PRODUCT.md

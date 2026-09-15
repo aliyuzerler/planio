@@ -1,0 +1,33 @@
+{
+  "name": "@xenior/database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "format": "prisma format",
+    "generate": "prisma generate",
+    "validate": "prisma validate",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:status": "prisma migrate status",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src prisma.config.ts --max-warnings=0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.2"
+  },
+  "devDependencies": {
+    "dotenv": "^17.2.2",
+    "prisma": "^6.16.2",
+    "typescript": "^5.9.2"
+  }
+}

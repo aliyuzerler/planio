@@ -1,0 +1,43 @@
+FAZ 03 — CRM DOSYA VE CARI ISKELET
+==================================
+Onceki: Faz 00
+Sonraki: Faz 06 (cari hareket dolar)
+
+HEDEF
+-----
+Musteri kartina dijital arsiv. Cari bakiye alani hazir; sayilar kasa fazinda dolar.
+
+
+KAPSAM
+------
+1. CustomerFile
+   - PDF / goruntu, tip: KVKK, islak imza formu, diger
+   - Object storage (S3 uyumlu env)
+   - Musteri detayinda liste, yukle, sil
+   - Rol: OWNER, ADMIN yazma; ACCOUNTANT okuma (belge); STAFF okuma sinirli veya yok — oneri: STAFF okur, yuklemez
+
+2. Cari iskelet
+   - Customer uzerinde derived veya ledger bakiyesi (baslangic 0)
+   - UI'da "Cari: 0,00 TRY" — Faz 06 Collection/Sale ile guncellenir
+
+3. Mobil
+   - Musteri formunda SMS/WhatsApp/e-posta riza kutulari (web'de var)
+
+
+DISARIDA
+--------
+Parcali tahsilat motoru (Faz 06), stok, fatura kesimi.
+
+
+TESLIM
+------
+Musteriye KVKK PDF yuklenir, kartta gorunur.
+Cari alani vardir, henuz 0.
+
+
+DOKUNULACAK YERLER
+------------------
+Yeni API modul veya customers altinda files
+apps/web musteri detay
+.env: S3/storage
+apps/mobile customer form

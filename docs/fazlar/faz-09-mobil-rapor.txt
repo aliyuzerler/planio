@@ -1,0 +1,48 @@
+FAZ 09 — MOBIL, RAPOR, CILALAMA
+===============================
+Onceki: Faz 06-08 islevleri web'de duruyor olmali
+Sonraki: yok (bu tur sonu)
+
+HEDEF
+-----
+Personel mobilini kasa/prim ile hizala. Raporlar. Dokuman senkronu.
+
+
+KAPSAM
+------
+1. Mobil
+   - ACCOUNTANT: kasa ozeti, tahsilat, fis listesi (olusturma web kadar sart degil)
+   - STAFF: kendi ajanda, kendi prim, gununde tahsilat notu
+   - OWNER: ozet
+   - Randevu olusturma mobil: yalniz isletme rolleri (ACCOUNTANT yok)
+
+2. Rapor (web, ACCOUNTANT + OWNER)
+   - Gunluk kasa
+   - Cari alacak
+   - Prim toplami
+   - Gider
+   - Sade ozet; tam gelir tablosu sart degil
+
+3. Admin
+   - Lisans metrikleri (6 aylik dahil)
+   - Tenant finans verisi PLATFORM admin'e ACIK DEGIL (izolasyon)
+
+4. KVKK
+   - DataRequest ERASE is kuyrugu (anonimlestirme)
+   - Isletme denetim kaydi (owner)
+
+5. Dokuman
+   - ARCHITECTURE.md, API.md, PRODUCT.md, DATABASE.md guncelle
+   - Stok "sonra" olarak backlog notu birak
+
+
+DISARIDA
+--------
+Gelismis stok, cok sube, musteri self-booking.
+
+
+TESLIM
+------
+Mobil muhasebe kullanicisi kasa ozetini gorur, randevu menusu yoktur.
+Owner gunluk kasa raporunu indirir/gorur.
+Docs kod ile uyumlu.

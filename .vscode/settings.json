@@ -1,0 +1,5 @@
+{
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:LOCALAPPDATA}\\Programs\\DockerDesktop\\resources\\bin;${env:LOCALAPPDATA}\\FlutterSdk\\flutter\\bin;${env:LOCALAPPDATA}\\Corepack\\bin;${env:PATH}"
+  }
+}

@@ -1,0 +1,46 @@
+FAZ 05 — PERSONEL PRIM
+======================
+Onceki: Faz 01 (COMPLETED)
+Sonraki: Faz 06 (prim odemesi gider kaydi)
+
+HEDEF
+-----
+Tamamlanan randevu/satistan kurali gore prim satiri.
+
+
+KAPSAM
+------
+1. CommissionRule
+   - hizmet bazli sabit TRY veya yuzde
+   - ac/kapa
+   - tenant scoped
+
+2. CommissionEntry
+   - randevu COMPLETED (ve sonra Sale) ile olusur
+   - personel, tutar, kaynak id, tarih
+   - iptal/no-show prim yazmaz; complete geri alinmazsa iptal politikasi: complete sonrasi iptal yok (mevcut kural)
+
+3. UI
+   - OWNER/ADMIN kural tanimlar
+   - STAFF yalniz kendi hakedisi
+   - ACCOUNTANT hakedis listesini gorur (maas/prim odemesi icin Faz 06)
+
+4. Izin / vardiya
+   - Istege bagli, primden SONRA; ilk teslimde sart degil
+
+
+DISARIDA
+--------
+Bordro, SGK, gelismis vardiya.
+
+
+TESLIM
+------
+Manikur complete -> kurala gore prim satiri personel ekraninda.
+
+
+DOKUNULACAK YERLER
+------------------
+appointments.service complete hook
+yeni commissions modul
+web personel + ayarlar

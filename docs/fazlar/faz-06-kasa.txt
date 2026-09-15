@@ -1,0 +1,60 @@
+FAZ 06 — KASA VE DAHILI SATIS FISI
+==================================
+Onceki: Faz 00 (ACCOUNTANT), Faz 04 (fiyat), Faz 05 (prim, baglanabilir)
+Sonraki: Faz 07 (POS/link), Faz 08 (Uyumsoft — dahili fis BU fazda dogar)
+
+HEDEF
+-----
+On muhasebe cekirdegi. Xenior abonelik Payment tablosu ILE KARISMAZ.
+Stok YOK. Dahili satis fisi VAR (resmi e-belge degil).
+
+
+KAPSAM
+------
+Modeller (oneri):
+  CashAccount     nakit / banka (POS hesabi sonra)
+  Sale            randevuya bagli veya tezgah hizmet satisi
+  SaleLine        hizmet satiri (urun satiri stoksuz ertelenebilir)
+  Collection      nakit simdilik; parcali odeme
+  Expense         kira, fatura, malzeme, maas/prim odemesi
+  CustomerLedger  satis +, tahsilat -
+  SalesReceipt    dahili fis no, PDF/HTML, Sale'e 1-1
+
+Akis:
+  1. Randevu tamamlaninca veya kasadan hizmet satisi -> Sale (kampanya fiyati)
+  2. Tahsilat: gununde nakit (C) veya onceki kapora bakiyesi (Faz 07 tamamlar)
+  3. Acik hesap = Sale - Collection
+  4. "Fis kes" -> dahili SalesReceipt, musteriye e-posta/indirme
+  5. Gider ve prim odemesi kasa cikis
+
+Odeme niyeti randevuda (alanlar, UI tamami Faz 07):
+  paymentPlan: DEPOSIT | FULL | ON_DAY
+  Bu fazda en az ON_DAY + nakit Collection calisir.
+  DEPOSIT/FULL linki Faz 07.
+
+Roller:
+  OWNER + ACCOUNTANT: kasa yazma
+  ADMIN: operasyon; kasa yazma politikasi: OWNER karar verir — oneri ADMIN kasa yazmaz
+  STAFF: kendi sattigi / kendi randevusunun tahsilatini gorebilir, kasa tanimi yapamaz
+
+UI (web):
+  Kasa, Satislar, Giderler, Cari, Fis onizleme
+  ACCOUNTANT nav: yalniz bu sayfalar + profil
+
+
+DISARIDA
+--------
+Stok adedi, depo, Uyumsoft (Faz 08), sanal POS (Faz 07).
+
+
+TESLIM
+------
+Randevu complete -> satis -> nakit tahsilat -> kasa ve cari guncel.
+Dahili fis numarasi uretilir, yazdirilir/indirilir.
+
+
+DOKUNULACAK YERLER
+------------------
+Yeni apps/api modul: ledger / sales / cash
+Yeni web route grubu /settings/cash vs.
+Prisma modelleri (Subscription Payment'a dokunma)

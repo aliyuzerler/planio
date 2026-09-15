@@ -1,0 +1,60 @@
+FAZ 07 — ISLETME TAHSILATI (KAPORA / TAM / GUNUNDE)
+===================================================
+Onceki: Faz 06 (Sale, Collection, CashAccount)
+Sonraki: Faz 08 (fatura resmi)
+
+HEDEF
+-----
+Musteri isteginine gore uc yol:
+
+  A) Kapora     — kismi on odeme, kalan gununde
+  B) Tamami     — hizmet bedelinin tamami onceden
+  C) Gununde    — randevu gunu nakit / POS / link (Faz 06 C zaten nakit)
+
+Randevuyu yine SADECE isletme acar. Odeme linki musteriye SMS/e-posta ile gider.
+
+
+KAPSAM
+------
+1. Randevu odeme plani
+   - paymentPlan: DEPOSIT | FULL | ON_DAY
+   - depositAmount (A icin)
+   - paymentStatus: UNPAID / PARTIAL / PAID
+   - CONFIRMED randevu odeme beklemeden acilabilir (C)
+   - A/B secilirse isletme link gonderebilir; odeme Collection + Sale baglantisi
+
+2. Entegrasyonlar sayfasi (Bildirimler'den ayri)
+   - Tenant sanal POS (iyzico veya generic) — sifreli, NetGSM kaliibi
+   - Platform Xenior iyzico anahtarlari ile KARIŞMAZ
+
+3. Odeme linki
+   - SMS/e-posta, tek kullanimlik, tutar kapora veya tam
+   - Basarili webhook -> Collection, paymentStatus guncelle
+
+4. Manuel POS ekrani
+   - OWNER + ACCOUNTANT: tutar, musteri, randevu sec, POS cekildi isaretle
+
+5. Gununde
+   - Complete oncesi kalan tutar uyarisi (zorunlu kilma istege bagli; oneri: uyar, bloklama)
+   - Nakit veya POS veya yeni link
+
+
+DISARIDA
+--------
+Musterinin kendi basina randevu + odeme sayfasi (self-booking yok).
+Stok.
+
+
+TESLIM
+------
+Randevu formunda uc odeme secenegi.
+Kapora linki odenince cari/kasa isler, kalan gununde gorunur.
+Tam odeme sonrasi bakiye 0.
+
+
+DOKUNULACAK YERLER
+------------------
+appointments DTO + UI
+payments tenant checkout (ayri modul, platform payments.service dokunulmaz veya net ayirici)
+notifications: odeme linki mesaji
+web entegrasyonlar sayfasi

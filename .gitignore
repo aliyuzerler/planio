@@ -1,0 +1,92 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+!.env.example
+**/.env
+!**/.env.example
+apps/mobile/env/*.json
+!apps/mobile/env/*.example.json
+secrets/
+credentials/
+*.pem
+*.p12
+*.key
+
+# Logs and debug
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+dist/
+build/
+out/
+.next/
+.turbo/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+
+# Prisma generated client (if using custom output)
+packages/database/generated/
+
+# Flutter / Dart
+apps/mobile/.dart_tool/
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies
+apps/mobile/.pub-cache/
+apps/mobile/.pub/
+apps/mobile/build/
+apps/mobile/coverage/
+apps/mobile/*.iml
+apps/mobile/**/doc/api/
+apps/mobile/android/local.properties
+apps/mobile/android/.gradle/
+apps/mobile/android/app/debug/
+apps/mobile/android/app/profile/
+apps/mobile/android/app/release/
+apps/mobile/ios/Flutter/Flutter.framework
+apps/mobile/ios/Flutter/Flutter.podspec
+apps/mobile/ios/Flutter/Generated.xcconfig
+apps/mobile/ios/Flutter/ephemeral/
+apps/mobile/ios/Flutter/app.flx
+apps/mobile/ios/Flutter/app.zip
+apps/mobile/ios/Flutter/flutter_assets/
+apps/mobile/ios/Flutter/flutter_export_environment.sh
+apps/mobile/ios/.symlinks/
+apps/mobile/ios/Pods/
+apps/mobile/ios/ServiceDefinitions.json
+apps/mobile/**/*.symbols
+apps/mobile/**/*.map.json
+
+# Docker
+docker/data/
+
+# Local object storage
+storage/
+apps/api/storage/

@@ -1,0 +1,6 @@
+export const NOTIFICATION_QUEUE = "notifications";
+export const NOTIFICATION_JOB = "deliver";
+export const NOTIFICATION_MAX_ATTEMPTS = 5;
+export const NOTIFICATION_BACKOFF_MS = 2_000;
+export const REMINDER_LEAD_BUFFER_MS = 15_000;
+export const NOTIFICATION_PROVIDERS = "NOTIFICATION_PROVIDERS";

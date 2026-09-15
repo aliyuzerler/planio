@@ -1,0 +1,49 @@
+FAZ 02 — LISANS (6 AYLIK)
+=========================
+Onceki: Faz 00
+Sonraki: bagimsiz; Faz 09 admin cilasi
+
+HEDEF
+-----
+PDF lisans katmani: aylik + 6 aylik + yillik. Fiyat kodda sabit degil.
+
+
+KAPSAM
+------
+1. BillingPeriod.SEMIANNUAL
+   - Prisma enum + migration
+   - addBillingPeriod 6 ay ekler
+   - types / validation / iyzico period mapping
+
+2. Plan seed
+   - Mevcut Starter / Professional icin 6 aylik satir
+   - Fiyat DB'de; admin degistirebilir
+   - iyzico externalPricingPlanCode admin Planlar sayfasinda
+
+3. Admin
+   - Plan olustur / guncelle: ad, donem (aylik/6 ay/yil), fiyat, limit JSON, iyzico kodu, aktif
+   - Self-register durur; istege bagli admin'den isletme olusturma (zorunlu degil)
+
+4. Paywall UI
+   - Faz 00 API kilidi uzerine web/mobil: suresi bitince yazma ekranlari kilit, abonelik sayfasina yonlendirme
+   - STAFF/ACCOUNTANT da ayni kilit (isletme kapsami)
+
+
+DISARIDA
+--------
+Ozel lisans tipleri, kullanim bazli faturalama.
+
+
+TESLIM
+------
+Abonelik sayfasinda 6 aylik paket görünür, iyzico kodu eslenince odeme donemi 6 aydir.
+EXPIRED isletme randevu acamaz (API + UI).
+
+
+DOKUNULACAK YERLER
+------------------
+packages/database Plan + BillingPeriod
+apps/api/src/subscriptions/
+apps/api/src/admin/ (plan CRUD)
+apps/web settings/subscription
+apps/admin plans

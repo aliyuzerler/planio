@@ -1,0 +1,45 @@
+FAZ 04 — KAMPANYA VE FIYAT
+==========================
+Onceki: Faz 01 (randevu snapshot)
+Sonraki: Faz 06 kasa ayni motoru kullanir
+
+HEDEF
+-----
+Tarih aralikli tutar/yuzde indirim. Randevu ve (sonra) kasa ayni fiyati gorur.
+
+
+KAPSAM
+------
+1. Campaign
+   - baslangic/bitis, yuzde veya tutar, hedef hizmet (kategori sonra)
+   - aktif bayrak, tenant scoped
+
+2. Fiyat cozumleyici (backend)
+   - listPrice, discountAmount, payableAmount, campaignId
+   - Appointment snapshot alanlari genisler
+   - Musteriye gosterilen fiyat ile tahsilat fiyati ayni kaynak
+
+3. UI
+   - Kampanyalar sayfasi (OWNER/ADMIN)
+   - Randevu formunda dusulmus fiyat
+   - ACCOUNTANT kampanya tanimlamaz, satista goren fiyatı kullanir
+
+4. Kampanya SMS kancasi
+   - Sablon; gercek toplu gonderim Faz 08
+
+
+DISARIDA
+--------
+Urun kampanyasi (stok yok), sadakat puani.
+
+
+TESLIM
+------
+Aktif kampanyada hizmet fiyati otomatik duser, randevu satirina islenir.
+
+
+DOKUNULACAK YERLER
+------------------
+Yeni campaigns modul
+appointments create/reschedule
+web ayarlar + randevu formu

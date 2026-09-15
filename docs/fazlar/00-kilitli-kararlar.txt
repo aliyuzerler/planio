@@ -1,0 +1,74 @@
+KILITLI URUN KARARLARI
+======================
+Tarih: 8 Eylul 2026
+Bu dosya tum fazlarin uzerinde gecerlidir. Celisen bir madde gorulurse bu dosya kazanir.
+
+
+1. RANDEVU OLUSTURMA
+--------------------
+Randevuyu SADECE isletme kullanicisi olusturur (BUSINESS_OWNER, BUSINESS_ADMIN, STAFF).
+Musteri self-servis rezervasyon YOKTUR. Bu kural degismez.
+
+
+2. MUHASEBE ROLU
+----------------
+Yeni rol: ACCOUNTANT (schema: BusinessUserRole).
+
+Isletme (sahip veya BUSINESS_ADMIN) personel/kullanici icin bir hesap olusturur
+(davet e-postasi veya panelden kullanici + rol atama). Bu kisi o hesapla giris yapar.
+
+Giris yaptiginda YALNIZCA ilgili yerlere erisir:
+  ACIK: kasa, satislar, tahsilat, cari, giderler, dahili fis, e-fatura/SMM, finansal ozet, kendi profili
+  KAPALI: randevu olusturma/duzenleme, personel/hizmet/musteri katalog yazma, bildirim kurulumu,
+          abonelik (Xenior plan) odemesi, entegrasyon anahtari (sahip ayarlar)
+
+BUSINESS_ADMIN operasyon yardimcisi olarak KALIR (randevu, personel, hizmet, musteri).
+Muhasebe ile karistirilmaz.
+
+
+3. KAPORA / RANDEVU TAHSILATI
+-----------------------------
+Musterinin istegine gore ISLETME randevu olustururken odeme sekli secer:
+
+  A) KAPORA     — kismi on odeme; kalan randevu gununde
+  B) TAMAMI     — hizmet bedelinin tamami onceden
+  C) GUNUNDE    — randevu gunu nakit/POS/link (varsayilan)
+
+Randevu kaydi yine isletme tarafindan acilir. Odeme yoksa bile randevu olusturulabilir (C).
+Kapora veya tam odeme istenirse link/POS/nakit ile Collection olusur (Faz 6-7).
+
+Eski kural "randevuda hic odeme yok" KALDIRILIR. Xenior abonelik iyzico'su AYRI KALIR
+(platform geliri). Musteri tahsilati isletme kasasina gider.
+
+
+4. 6 AYLIK LISANS
+-----------------
+BillingPeriod: MONTHLY | SEMIANNUAL | YEARLY
+Plan fiyatlari veritabanindan okunur, koda gomulmez.
+Admin panelde 6 aylik plan tanimi + iyzico externalPricingPlanCode.
+
+
+5. STOK
+-------
+Ilk surumde stok ZORUNLU DEGIL. Depo, lot, adet dusumu YOK.
+Ileride ayri faz olarak dusunulecek. Bu yuzden Faz 6 urun katalogunu stoksuz tutar
+veya urun satirini ertele.
+
+
+6. E-FATURA
+-----------
+IKISI DE VAR:
+
+  1) Dahili satis fisi  — Xenior icinde satis belgesi (Faz 6). Resmi e-belge degil.
+  2) Uyumsoft           — e-Fatura veya SMM (Faz 8). Hub'dan isletme kendi bilgilerini girer.
+
+Akis: Satis/tahsilat -> dahili fis her zaman kesilebilir -> istenirse Uyumsoft ile resmi belge.
+
+
+7. DIGER SABITLER (onceki mimari, korunur)
+------------------------------------------
+- Multi-tenant, X-Business-Id
+- Randevu durumlari: CONFIRMED, COMPLETED, CANCELLED, NO_SHOW (NO_SHOW kalir)
+- Bildirim: NetGSM / WhatsApp / SMTP / FCM, tenant kurulum paneli
+- Platform iyzico != tenant sanal POS
+- Musteri randevu acamaz
