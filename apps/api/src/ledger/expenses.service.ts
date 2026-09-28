@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
 } from "@nestjs/common";
 import type { Prisma } from "@xenior/database";
@@ -17,6 +18,29 @@ const expenseInclude = {
   cashAccount: { select: { id: true, name: true } },
   staff: { select: { id: true, firstName: true, lastName: true } },
 } satisfies Prisma.ExpenseInclude;
+
+function isCommissionEntryUniqueViolation(error: unknown): boolean {
+  if (
+    !error ||
+    typeof error !== "object" ||
+    !("code" in error) ||
+    error.code !== "P2002"
+  ) {
+    return false;
+  }
+  const meta =
+    "meta" in error
+      ? (error as { meta?: { target?: unknown } }).meta
+      : undefined;
+  const target = meta?.target;
+  if (Array.isArray(target)) {
+    return target.includes("commissionEntryId");
+  }
+  if (typeof target === "string") {
+    return target.includes("commissionEntryId");
+  }
+  return false;
+}
 
 @Injectable()
 export class ExpensesService {
@@ -64,13 +88,13 @@ export class ExpensesService {
     const actorId = authorization?.user.userId;
     if (!actorId) {
       throw new BadRequestException({
-        message: "Authenticated user is required.",
+        message: "Kimlik doğrulaması gerekli.",
         code: "UNAUTHENTICATED",
       });
     }
     if (toCents(input.amount) <= 0) {
       throw new BadRequestException({
-        message: "Expense must be greater than zero.",
+        message: "Gider tutarı sıfırdan büyük olmalıdır.",
         code: "INVALID_EXPENSE",
       });
     }
@@ -85,17 +109,29 @@ export class ExpensesService {
         let staffId = input.staffId ?? null;
         if (input.commissionEntryId) {
           const entry = await transaction.commissionEntry.findFirst({
-            where: { id: input.commissionEntryId, businessId: tenant.businessId },
+            where: {
+              id: input.commissionEntryId,
+              businessId: tenant.businessId,
+            },
+            include: {
+              payoutExpense: { select: { id: true } },
+            },
           });
           if (!entry) {
             throw new BadRequestException({
-              message: "Commission entry does not belong to this business.",
+              message: "Hakediş satırı bu işletmeye ait değil.",
               code: "INVALID_COMMISSION_ENTRY",
+            });
+          }
+          if (entry.payoutExpense) {
+            throw new ConflictException({
+              message: "Bu hakediş satırı için ödeme zaten yapılmış.",
+              code: "COMMISSION_ALREADY_PAID",
             });
           }
           if (toCents(input.amount) > toCents(entry.amount.toFixed(2))) {
             throw new BadRequestException({
-              message: "Commission payout cannot exceed the earned amount.",
+              message: "Hakediş ödemesi kazanılan tutarı aşamaz.",
               code: "COMMISSION_PAYOUT_EXCEEDS",
             });
           }
@@ -107,7 +143,7 @@ export class ExpensesService {
           });
           if (!staff) {
             throw new BadRequestException({
-              message: "Staff does not belong to this business.",
+              message: "Personel bu işletmeye ait değil.",
               code: "INVALID_STAFF",
             });
           }
@@ -127,7 +163,9 @@ export class ExpensesService {
             amount: input.amount,
             currency: business?.currency ?? "TRY",
             notes: input.notes ?? null,
-            occurredAt: input.occurredAt ? new Date(input.occurredAt) : new Date(),
+            occurredAt: input.occurredAt
+              ? new Date(input.occurredAt)
+              : new Date(),
           },
           include: expenseInclude,
         });
@@ -145,14 +183,15 @@ export class ExpensesService {
         return this.toRecord(expense);
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "P2002"
+        input.commissionEntryId &&
+        isCommissionEntryUniqueViolation(error)
       ) {
         throw new ConflictException({
-          message: "This commission entry already has a payout.",
+          message: "Bu hakediş satırı için ödeme zaten yapılmış.",
           code: "COMMISSION_ALREADY_PAID",
         });
       }

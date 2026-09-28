@@ -198,6 +198,7 @@ export class CommissionsService {
         where,
         include: {
           staff: { select: { id: true, firstName: true, lastName: true } },
+          payoutExpense: { select: { id: true } },
         },
         orderBy: [{ earnedAt: "desc" }, { createdAt: "desc" }],
         skip,
@@ -397,6 +398,7 @@ export class CommissionsService {
     earnedAt: Date;
     createdAt: Date;
     staff: { id: string; firstName: string; lastName: string };
+    payoutExpense?: { id: string } | null;
   }): CommissionEntryRecord {
     return {
       id: entry.id,
@@ -415,6 +417,7 @@ export class CommissionsService {
       currency: entry.currency,
       earnedAt: entry.earnedAt.toISOString(),
       createdAt: entry.createdAt.toISOString(),
+      payoutExpenseId: entry.payoutExpense?.id ?? null,
     };
   }
 

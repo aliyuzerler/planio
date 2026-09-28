@@ -24,6 +24,7 @@ export {
   loginInputSchema,
   refreshTokenInputSchema,
   registerInputSchema,
+  registerPendingResponseSchema,
   resetPasswordInputSchema,
   verifyEmailInputSchema,
 } from "./auth";

@@ -1,215 +1,175 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@xenior/ui";
+import { ArrowRight, UserPlus } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
-import { PageHeader } from "@/components/ui/page-header";
 import { QueryState } from "@/components/ui/query-state";
-import { useToast } from "@/components/ui/toast";
-import { AppError } from "@/lib/api/errors";
-import { inviteAccountant } from "@/lib/business/business-api";
-import {
-  DataTable,
-  DataTableBody,
-  DataTableCell,
-  DataTableHead,
-  DataTableHeaderCell,
-  DataTableRow,
-} from "@/components/ui/data-table";
 import { useCanManageStaff, useStaffList } from "@/lib/staff/staff-queries";
+
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+const controlClass =
+  "rounded-xl bg-white px-3 py-2.5 text-sm text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none transition focus:ring-2 focus:ring-[#7eb8c8]";
 
 export default function StaffListPage() {
   const [q, setQ] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "true" | "false">(
     "all",
   );
+  const [roleFilter, setRoleFilter] = useState<"all" | "STAFF" | "ACCOUNTANT">(
+    "all",
+  );
   const canManage = useCanManageStaff();
   const staff = useStaffList({
     q: q.trim() || undefined,
     isActive: activeFilter === "all" ? undefined : activeFilter === "true",
+    loginRole: roleFilter === "all" ? undefined : roleFilter,
   });
 
   return (
-    <PageFrame width="lg">
-      <PageHeader
-        title="Personel"
-        description="İşletme personelini görüntüleyin ve yönetin."
-        actions={
-          canManage ? (
-            <Button asChild>
-              <Link href="/settings/staff/new">Yeni personel</Link>
-            </Button>
-          ) : null
-        }
+    <PageFrame width="lg" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
       />
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <input
-          aria-label="Personel ara"
-          value={q}
-          onChange={(event) => setQ(event.target.value)}
-          placeholder="Ad, telefon veya e-posta ara"
-          className="min-w-64 flex-1 rounded-md border border-zinc-300 px-3 py-2 text-sm"
-        />
-        <select
-          aria-label="Durum filtresi"
-          value={activeFilter}
-          onChange={(event) =>
-            setActiveFilter(event.target.value as typeof activeFilter)
-          }
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-        >
-          <option value="all">Tümü</option>
-          <option value="true">Aktif</option>
-          <option value="false">Pasif</option>
-        </select>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Ekip
+          </p>
+          <h1
+            className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+            style={displayFont}
+          >
+            Personel
+          </h1>
+          <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[#5a7380]">
+            Personel ve muhasebe kullanıcılarını oluşturun; detaydan e-posta
+            daveti gönderin.
+          </p>
+        </div>
+        {canManage ? (
+          <Link
+            href="/settings/staff/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]"
+          >
+            <UserPlus className="h-4 w-4" />
+            Yeni kullanıcı
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        ) : null}
       </div>
 
-      <QueryState
-        isLoading={staff.isLoading}
-        isError={staff.isError}
-        isEmpty={staff.data?.length === 0}
-        loading="Personel yükleniyor…"
-        error="Personel bilgileri yüklenemedi."
-        empty="Henüz personel bulunmuyor."
-      >
-        {staff.data ? (
-          <DataTable caption="Personel listesi">
-            <DataTableHead>
-              <DataTableRow>
-                <DataTableHeaderCell>Ad</DataTableHeaderCell>
-                <DataTableHeaderCell>İletişim</DataTableHeaderCell>
-                <DataTableHeaderCell>Uzmanlıklar</DataTableHeaderCell>
-                <DataTableHeaderCell>Durum</DataTableHeaderCell>
-              </DataTableRow>
-            </DataTableHead>
-            <DataTableBody>
-              {staff.data.map((person) => (
-                <DataTableRow key={person.id}>
-                  <DataTableCell>
+      <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="flex flex-wrap gap-3 border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-4 py-3 sm:px-5">
+          <input
+            aria-label="Personel ara"
+            value={q}
+            onChange={(event) => setQ(event.target.value)}
+            placeholder="Ad, telefon veya e-posta ara"
+            className={`min-w-64 flex-1 ${controlClass}`}
+          />
+          <select
+            aria-label="Rol filtresi"
+            value={roleFilter}
+            onChange={(event) =>
+              setRoleFilter(event.target.value as typeof roleFilter)
+            }
+            className={controlClass}
+          >
+            <option value="all">Tüm roller</option>
+            <option value="STAFF">Personel</option>
+            <option value="ACCOUNTANT">Muhasebe</option>
+          </select>
+          <select
+            aria-label="Durum filtresi"
+            value={activeFilter}
+            onChange={(event) =>
+              setActiveFilter(event.target.value as typeof activeFilter)
+            }
+            className={controlClass}
+          >
+            <option value="all">Tümü</option>
+            <option value="true">Aktif</option>
+            <option value="false">Pasif</option>
+          </select>
+        </div>
+
+        <div className="p-4 sm:p-5">
+          <QueryState
+            isLoading={staff.isLoading}
+            isError={staff.isError}
+            isEmpty={staff.data?.length === 0}
+            loading="Personel yükleniyor…"
+            error="Personel bilgileri yüklenemedi."
+            empty="Henüz kayıt bulunmuyor."
+          >
+            {staff.data ? (
+              <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+                {staff.data.map((person) => (
+                  <li key={person.id}>
                     <Link
                       href={`/settings/staff/${person.id}`}
-                      className="font-medium underline"
+                      className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 transition hover:bg-[#eef6f8]"
                     >
-                      {person.firstName} {person.lastName}
+                      <div className="min-w-0">
+                        <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                          {person.firstName} {person.lastName}
+                        </p>
+                        <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
+                          {person.phone ??
+                            person.email ??
+                            "İletişim bilgisi yok"}
+                          {person.loginRole === "STAFF" &&
+                          person.specializations.length > 0
+                            ? ` · ${person.specializations
+                                .map((item) => item.name)
+                                .join(", ")}`
+                            : ""}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <RoleBadge role={person.loginRole} />
+                        <StatusBadge active={person.isActive} />
+                        <ArrowRight className="h-4 w-4 text-[#7eb8c8]" />
+                      </div>
                     </Link>
-                  </DataTableCell>
-                  <DataTableCell className="text-zinc-600">
-                    {person.phone ?? person.email ?? "İletişim bilgisi yok"}
-                  </DataTableCell>
-                  <DataTableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {person.specializations.map((specialization) => (
-                        <span
-                          key={specialization.id}
-                          className="rounded-full bg-zinc-100 px-2 py-1 text-xs"
-                        >
-                          {specialization.name}
-                        </span>
-                      ))}
-                    </div>
-                  </DataTableCell>
-                  <DataTableCell>
-                    <Status active={person.isActive} />
-                  </DataTableCell>
-                </DataTableRow>
-              ))}
-            </DataTableBody>
-          </DataTable>
-        ) : null}
-      </QueryState>
-      {canManage ? <AccountantInviteCard /> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </QueryState>
+        </div>
+      </div>
     </PageFrame>
   );
 }
 
-function Status({ active }: { active: boolean }) {
+function RoleBadge({ role }: { role: "STAFF" | "ACCOUNTANT" }) {
   return (
     <span
-      className={`rounded-full px-2 py-1 text-xs ${
-        active ? "bg-emerald-50 text-emerald-800" : "bg-zinc-100 text-zinc-700"
+      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+        role === "ACCOUNTANT"
+          ? "bg-[#e4f0f4] text-[#3d6b7a]"
+          : "bg-[#b8e6df]/50 text-[#2f5563]"
       }`}
     >
-      {active ? "Aktif" : "Pasif"}
+      {role === "ACCOUNTANT" ? "Muhasebe" : "Personel"}
     </span>
   );
 }
 
-function AccountantInviteCard() {
-  const { pushToast } = useToast();
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setMessage(null);
-    try {
-      await inviteAccountant({ email, firstName, lastName });
-      setEmail("");
-      setFirstName("");
-      setLastName("");
-      setMessage("Muhasebe daveti gönderildi.");
-      pushToast("Muhasebe daveti gönderildi.");
-    } catch (cause) {
-      const text =
-        cause instanceof AppError ? cause.message : "Davet gönderilemedi.";
-      setMessage(text);
-      pushToast(text, "error");
-    } finally {
-      setSaving(false);
-    }
-  }
-
+function StatusBadge({ active }: { active: boolean }) {
   return (
-    <form
-      className="mt-8 grid gap-4 rounded-xl border border-zinc-200 p-6"
-      onSubmit={(event) => void handleSubmit(event)}
+    <span
+      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+        active
+          ? "bg-[#b8e6df]/45 text-[#2f5563]"
+          : "bg-[#e4f0f4] text-[#5a7380]"
+      }`}
     >
-      <div>
-        <h2 className="text-lg font-semibold">Muhasebe kullanıcısı davet et</h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          Bu hesapla giriş yapan kişi yalnızca muhasebe ekranlarını görür.
-        </p>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <label className="flex flex-col gap-1 text-sm">
-          Ad
-          <input
-            required
-            value={firstName}
-            onChange={(event) => setFirstName(event.target.value)}
-            className="rounded-md border border-zinc-300 px-3 py-2"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Soyad
-          <input
-            required
-            value={lastName}
-            onChange={(event) => setLastName(event.target.value)}
-            className="rounded-md border border-zinc-300 px-3 py-2"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          E-posta
-          <input
-            required
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="rounded-md border border-zinc-300 px-3 py-2"
-          />
-        </label>
-      </div>
-      {message ? <p role="status" className="text-sm text-zinc-700">{message}</p> : null}
-      <Button type="submit" disabled={saving}>
-        {saving ? "Gönderiliyor…" : "Muhasebe daveti gönder"}
-      </Button>
-    </form>
+      {active ? "Aktif" : "Pasif"}
+    </span>
   );
 }

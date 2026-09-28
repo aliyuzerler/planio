@@ -39,6 +39,7 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy) {
         email: true,
         platformRole: true,
         isActive: true,
+        emailVerifiedAt: true,
       },
     });
 
@@ -46,6 +47,13 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException({
         message: "Authentication is no longer valid.",
         code: "ACCOUNT_INACTIVE",
+      });
+    }
+
+    if (!user.emailVerifiedAt) {
+      throw new UnauthorizedException({
+        message: "Email address must be verified before continuing.",
+        code: "EMAIL_NOT_VERIFIED",
       });
     }
 

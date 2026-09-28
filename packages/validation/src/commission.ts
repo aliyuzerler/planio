@@ -91,6 +91,7 @@ export const commissionEntryRecordSchema: z.ZodType<CommissionEntryRecord> =
     currency: z.string().regex(/^[A-Z]{3}$/),
     earnedAt: z.string().datetime(),
     createdAt: z.string().datetime(),
+    payoutExpenseId: z.string().uuid().nullable(),
   });
 
 export const paginatedCommissionEntrySchema: z.ZodType<

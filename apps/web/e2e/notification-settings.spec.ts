@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "71111111-1111-4111-8111-111111111111";
 const now = "2026-09-05T00:00:00.000Z";
@@ -41,7 +42,7 @@ const settings = {
   updatedAt: now,
 };
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -51,6 +52,7 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  await mockSubscriptionAccess(page);
 });
 
 test("owner updates notification settings and sees failed deliveries", async ({

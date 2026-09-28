@@ -13,6 +13,7 @@ const COMPANY_LINKS = [
   { href: "/iletisim", label: "Bize Ulaşın" },
   { href: "/#sss", label: "SSS" },
   { href: "/gizlilik", label: "Gizlilik politikası" },
+  { href: "/mesafeli-satis-sozlesmesi", label: "Mesafeli satış sözleşmesi" },
 ] as const;
 
 export function SiteFooter() {
@@ -80,6 +81,12 @@ export function SiteFooter() {
           <div className="flex flex-wrap gap-6 text-[13px] text-[#5a7380]">
             <Link href="/gizlilik" className="hover:text-[#1e3340]">
               Gizlilik Politikası
+            </Link>
+            <Link
+              href="/mesafeli-satis-sozlesmesi"
+              className="hover:text-[#1e3340]"
+            >
+              Mesafeli Satış Sözleşmesi
             </Link>
             <Link href="/iletisim" className="hover:text-[#1e3340]">
               İletişim

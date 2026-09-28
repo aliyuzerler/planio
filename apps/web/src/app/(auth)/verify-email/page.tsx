@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AppError } from "@/lib/api/errors";
-import { verifyEmail } from "@/lib/auth/auth-api";
+import { getSession, verifyEmail } from "@/lib/auth/auth-api";
+import { useAuthStore } from "@/stores/auth-store";
 
 export default function VerifyEmailPage() {
+  const router = useRouter();
+  const setSession = useAuthStore((state) => state.setSession);
   const token = useSearchParams().get("token") ?? "";
   const [message, setMessage] = useState(() =>
     token ? "E-posta doğrulanıyor…" : "",
@@ -20,10 +23,13 @@ export default function VerifyEmailPage() {
 
     let active = true;
     void verifyEmail({ token })
-      .then(() => {
+      .then(async () => {
+        const session = await getSession();
         if (!active) return;
-        setMessage("E-posta doğrulandı.");
+        setSession(session.user, session.accessToken, session.memberships);
+        setMessage("E-posta doğrulandı. Panele yönlendiriliyorsunuz…");
         setError(null);
+        router.replace("/dashboard");
       })
       .catch((cause: unknown) => {
         if (!active) return;
@@ -36,7 +42,7 @@ export default function VerifyEmailPage() {
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [router, setSession, token]);
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6">

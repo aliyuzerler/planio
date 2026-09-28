@@ -1,5 +1,8 @@
 import type { WeeklyHoursSlot } from "./notification";
 
+export const STAFF_LOGIN_ROLES = ["STAFF", "ACCOUNTANT"] as const;
+export type StaffLoginRole = (typeof STAFF_LOGIN_ROLES)[number];
+
 export interface StaffSpecialization {
   id: string;
   name: string;
@@ -14,6 +17,7 @@ export interface StaffProfile {
   phone: string | null;
   email: string | null;
   notes: string | null;
+  loginRole: StaffLoginRole;
   isActive: boolean;
   isSelf?: boolean;
   specializations: StaffSpecialization[];
@@ -35,6 +39,7 @@ export interface CreateStaffInput {
   phone?: string | null;
   email?: string | null;
   notes?: string | null;
+  loginRole: StaffLoginRole;
   specializationIds?: string[];
 }
 
@@ -61,6 +66,7 @@ export interface AssignStaffSpecializationInput {
 
 export interface ListStaffQuery {
   isActive?: boolean;
+  loginRole?: StaffLoginRole;
   q?: string;
 }
 

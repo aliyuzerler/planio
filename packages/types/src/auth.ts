@@ -36,6 +36,11 @@ export interface AuthSessionResponse extends AuthTokenResponse {
   user: AuthUser;
 }
 
+export interface RegisterPendingResponse {
+  email: string;
+  requiresEmailVerification: true;
+}
+
 export interface CurrentUserResponse {
   user: AuthUser;
   memberships: AuthMembership[];

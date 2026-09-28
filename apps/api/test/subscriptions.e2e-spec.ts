@@ -17,6 +17,7 @@ import { HttpExceptionFilter } from "../src/common/filters/http-exception.filter
 import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 import { PaymentsModule } from "../src/payments/payments.module";
 import { StaffModule } from "../src/staff/staff.module";
 import { SubscriptionsModule } from "../src/subscriptions/subscriptions.module";
@@ -100,18 +101,13 @@ describe("Subscription system (e2e)", () => {
 
   afterAll(async () => {
     const user = await prisma.user.findUnique({ where: { email } });
-    await prisma.auditLog.deleteMany({ where: { businessId } });
-    await prisma.payment.deleteMany({ where: { businessId } });
-    await prisma.subscription.deleteMany({ where: { businessId } });
-    await prisma.staff.deleteMany({ where: { businessId } });
+    await cleanupTenantFixtures(
+      prisma,
+      businessId ? [businessId] : [],
+      user ? [user.id] : [],
+    );
     if (limitPlanId) {
       await prisma.plan.deleteMany({ where: { id: limitPlanId } });
-    }
-    if (user) {
-      await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
-      await prisma.businessUser.deleteMany({ where: { userId: user.id } });
-      await prisma.business.deleteMany({ where: { id: businessId } });
-      await prisma.user.deleteMany({ where: { id: user.id } });
     }
     await app.close();
   });
@@ -271,7 +267,7 @@ describe("Subscription system (e2e)", () => {
       .post("/api/v1/staff")
       .set("Authorization", `Bearer ${token}`)
       .set(TENANT_HEADER, businessId)
-      .send({ firstName: "No", lastName: "Access" })
+      .send({ loginRole: "STAFF", firstName: "No", lastName: "Access" })
       .expect(403);
     expect(blocked.body.code).toBe("SUBSCRIPTION_INACTIVE");
   });
@@ -283,14 +279,14 @@ describe("Subscription system (e2e)", () => {
       .post("/api/v1/staff")
       .set("Authorization", `Bearer ${token}`)
       .set(TENANT_HEADER, businessId)
-      .send({ firstName: "Only", lastName: "One" })
+      .send({ loginRole: "STAFF", firstName: "Only", lastName: "One" })
       .expect(201);
 
     const limited = await request(app.getHttpServer())
       .post("/api/v1/staff")
       .set("Authorization", `Bearer ${token}`)
       .set(TENANT_HEADER, businessId)
-      .send({ firstName: "Too", lastName: "Many" })
+      .send({ loginRole: "STAFF", firstName: "Too", lastName: "Many" })
       .expect(403);
     expect(limited.body.code).toBe("PLAN_LIMIT_REACHED");
     expect(limited.body.details).toMatchObject({

@@ -29,10 +29,170 @@ body {
 @keyframes planio-rise {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes planio-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes planio-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes planio-glow-drift {
+  0%,
+  100% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(-48%, 8px) scale(1.06);
+    opacity: 1;
+  }
+}
+
+@keyframes planio-soft-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(126 184 200 / 0%);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(126 184 200 / 12%);
+  }
+}
+
+.planio-rise {
+  animation: planio-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.planio-rise-delay-1 {
+  animation-delay: 0.08s;
+}
+.planio-rise-delay-2 {
+  animation-delay: 0.16s;
+}
+.planio-rise-delay-3 {
+  animation-delay: 0.24s;
+}
+.planio-rise-delay-4 {
+  animation-delay: 0.34s;
+}
+.planio-rise-delay-5 {
+  animation-delay: 0.48s;
+}
+
+.planio-float {
+  animation: planio-float 6.5s ease-in-out infinite;
+}
+
+.planio-glow-drift {
+  animation: planio-glow-drift 10s ease-in-out infinite;
+}
+
+.planio-soft-pulse {
+  animation: planio-soft-pulse 2.8s ease-in-out infinite;
+}
+
+.planio-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--planio-reveal-delay, 0ms);
+}
+
+.planio-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.planio-marquee {
+  position: relative;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+}
+
+.planio-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 0;
+  animation: planio-marquee 36s linear infinite;
+}
+
+.planio-marquee-track.is-reverse {
+  animation-direction: reverse;
+  animation-duration: 42s;
+}
+
+.planio-marquee:hover .planio-marquee-track {
+  animation-play-state: paused;
+}
+
+.planio-marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding-inline: 1.25rem;
+  white-space: nowrap;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #3d6b7a;
+}
+
+.planio-marquee-dot {
+  display: inline-block;
+  height: 6px;
+  width: 6px;
+  border-radius: 9999px;
+  background: #7eb8c8;
+  opacity: 0.7;
+}
+
+.planio-marquee--on-dark .planio-marquee-item {
+  color: #b8e6df;
+}
+
+.planio-marquee--on-dark .planio-marquee-dot {
+  background: #9fd0dc;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .planio-rise,
+  .planio-float,
+  .planio-glow-drift,
+  .planio-soft-pulse,
+  .planio-marquee-track {
+    animation: none !important;
+  }
+
+  .planio-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

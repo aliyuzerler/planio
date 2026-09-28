@@ -14,9 +14,9 @@ export const APPOINTMENT_STATUS_CLASSES: Record<
   AppointmentRecord["status"],
   string
 > = {
-  CONFIRMED: "border-sky-200 bg-sky-50 text-sky-800",
-  COMPLETED: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  CANCELLED: "border-zinc-200 bg-zinc-100 text-zinc-600",
+  CONFIRMED: "border-[#9fd0dc] bg-[#eef6f8] text-[#2f5563]",
+  COMPLETED: "border-[#b8e6df] bg-[#b8e6df]/35 text-[#2f5563]",
+  CANCELLED: "border-[#c5dde6] bg-[#F7FBFC] text-[#5a7380]",
   NO_SHOW: "border-amber-200 bg-amber-50 text-amber-900",
 };
 

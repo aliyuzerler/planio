@@ -19,6 +19,7 @@ import { AuditLogService } from "../audit/audit-log.service";
 import { RequestContextService } from "../authorization/request-context.service";
 import { PrismaService } from "../infrastructure/prisma/prisma.service";
 import { MailService } from "../notifications/mail.service";
+import { renderInviteEmail } from "../notifications/email-templates";
 import { SubscriptionAccessService } from "../subscriptions/subscription-access.service";
 import {
   AssignStaffSpecializationDto,
@@ -58,6 +59,7 @@ export class StaffService {
       where: {
         businessId,
         isActive: query.isActive,
+        loginRole: query.loginRole,
         ...(query.q
           ? {
               OR: [
@@ -143,10 +145,24 @@ export class StaffService {
   async create(input: CreateStaffDto): Promise<StaffProfile> {
     const authorization = this.requestContext.get();
     const { businessId } = this.requestContext.requireTenant();
+    const loginRole = input.loginRole;
+    const specializationIds =
+      loginRole === "ACCOUNTANT" ? [] : (input.specializationIds ?? []);
 
-    await this.subscriptionAccess.assertWithinLimit("staff", businessId);
+    if (loginRole === "ACCOUNTANT" && !input.email) {
+      throw new BadRequestException({
+        message: "Accountant invites require an email address.",
+        code: "STAFF_EMAIL_REQUIRED",
+      });
+    }
+
+    if (loginRole === "STAFF") {
+      await this.subscriptionAccess.assertWithinLimit("staff", businessId);
+    } else {
+      await this.subscriptionAccess.assertCanUseBusiness(businessId);
+    }
+
     return this.prisma.$transaction(async (transaction) => {
-      const specializationIds = input.specializationIds ?? [];
       if (specializationIds.length > 0) {
         const count = await transaction.specialization.count({
           where: {
@@ -168,6 +184,7 @@ export class StaffService {
           phone: input.phone,
           email: input.email,
           notes: input.notes,
+          loginRole,
         },
       });
       if (specializationIds.length > 0) {
@@ -189,6 +206,7 @@ export class StaffService {
           fields: [
             "firstName",
             "lastName",
+            "loginRole",
             ...(input.phone !== undefined ? ["phone"] : []),
             ...(input.email !== undefined ? ["email"] : []),
             ...(input.notes !== undefined ? ["notes"] : []),
@@ -218,7 +236,7 @@ export class StaffService {
     }
 
     return this.prisma.$transaction(async (transaction) => {
-      await this.findStaff(transaction, businessId, id);
+      const existing = await this.findStaff(transaction, businessId, id);
       await transaction.staff.update({
         where: { id },
         data: {
@@ -230,6 +248,16 @@ export class StaffService {
           isActive: input.isActive,
         },
       });
+      if (
+        input.isActive !== undefined &&
+        existing.businessUserId &&
+        input.isActive !== existing.isActive
+      ) {
+        await transaction.businessUser.update({
+          where: { id: existing.businessUserId },
+          data: { isActive: input.isActive },
+        });
+      }
       await this.recordAudit(
         transaction,
         "STAFF_UPDATED",
@@ -255,6 +283,8 @@ export class StaffService {
       });
     }
     const raw = createAuthTokenValue();
+    const roleLabel =
+      staff.loginRole === "ACCOUNTANT" ? "muhasebe" : "personel";
     await this.prisma.authToken.create({
       data: {
         purpose: "STAFF_INVITE",
@@ -262,15 +292,28 @@ export class StaffService {
         email: staff.email,
         businessId,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        metadata: { staffId: staff.id },
+        metadata: { staffId: staff.id, role: staff.loginRole },
       },
     });
-    const link = `${this.config.get("WEB_URL", { infer: true })}/invite?token=${encodeURIComponent(raw)}`;
+    const webUrl = this.config.get("WEB_URL", { infer: true });
+    const link = `${webUrl}/invite?token=${encodeURIComponent(raw)}`;
+    const business = await this.prisma.business.findUniqueOrThrow({
+      where: { id: businessId },
+      select: { name: true },
+    });
+    const rendered = renderInviteEmail({
+      webUrl,
+      inviteUrl: link,
+      email: staff.email,
+      businessName: business.name,
+      roleLabel: roleLabel === "muhasebe" ? "Muhasebe" : "Personel",
+    });
     await this.mail?.sendBestEffort({
       businessId,
       destination: staff.email,
-      subject: "Xenior personel daveti",
-      body: `Xenior paneline katılmak için: ${link}`,
+      subject: rendered.subject,
+      body: rendered.text,
+      html: rendered.html,
     });
     return { sent: true };
   }
@@ -358,7 +401,13 @@ export class StaffService {
     const { businessId } = this.requestContext.requireTenant();
     try {
       return await this.prisma.$transaction(async (transaction) => {
-        await this.findStaff(transaction, businessId, staffId);
+        const staff = await this.findStaff(transaction, businessId, staffId);
+        if (staff.loginRole === "ACCOUNTANT") {
+          throw new BadRequestException({
+            message: "Accountants cannot be assigned specializations.",
+            code: "ACCOUNTANT_SPECIALIZATION_FORBIDDEN",
+          });
+        }
         const specialization = await this.findSpecialization(
           transaction,
           businessId,
@@ -491,6 +540,7 @@ export class StaffService {
     phone: string | null;
     email: string | null;
     notes: string | null;
+    loginRole: "STAFF" | "ACCOUNTANT";
     isActive: boolean;
     businessUserId: string | null;
     createdAt: Date;
@@ -511,6 +561,7 @@ export class StaffService {
       phone: staff.phone,
       email: staff.email,
       notes: staff.notes,
+      loginRole: staff.loginRole,
       isActive: staff.isActive,
       isSelf: Boolean(
         staff.businessUserId &&

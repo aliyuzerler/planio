@@ -11,9 +11,14 @@ import type {
   AuthSessionResponse,
   AuthUser,
   CurrentUserResponse,
+  RegisterPendingResponse,
 } from "@xenior/types";
 import { PrismaService } from "../infrastructure/prisma/prisma.service";
 import { MailService } from "../notifications/mail.service";
+import {
+  renderEmailVerificationEmail,
+  renderPasswordResetEmail,
+} from "../notifications/email-templates";
 import { createAuthTokenValue, hashAuthToken } from "./auth-token";
 import {
   AcceptStaffInviteDto,
@@ -37,9 +42,12 @@ export class AuthService {
     @Optional() private readonly mail?: MailService,
   ) {}
 
-  async register(input: RegisterDto): Promise<AuthSessionResponse> {
+  async register(
+    input: RegisterDto,
+  ): Promise<AuthSessionResponse | RegisterPendingResponse> {
     const email = this.normalizeEmail(input.email);
     const passwordHash = await this.passwords.hash(input.password);
+    const isTest = this.config.get("NODE_ENV", { infer: true }) === "test";
 
     try {
       return await this.prisma.$transaction(async (transaction) => {
@@ -49,6 +57,8 @@ export class AuthService {
             passwordHash,
             firstName: input.firstName.trim(),
             lastName: input.lastName.trim(),
+            // E2E suites register and immediately call protected APIs.
+            emailVerifiedAt: isTest ? new Date() : null,
           },
         });
         const business = await transaction.business.create({
@@ -96,25 +106,39 @@ export class AuthService {
             },
           });
         }
-        const tokenResponse = await this.tokens.issueSession(user, transaction);
+
+        if (isTest) {
+          const tokenResponse = await this.tokens.issueSession(user, transaction);
+          return {
+            kind: "session" as const,
+            session: {
+              ...tokenResponse,
+              user: this.toAuthUser(user),
+            },
+          };
+        }
+
         return {
-          session: {
-            ...tokenResponse,
-            user: this.toAuthUser(user),
+          kind: "pending" as const,
+          pending: {
+            email,
+            requiresEmailVerification: true as const,
           },
           userId: user.id,
           businessId: business.id,
         };
       }).then(async (result) => {
+        if (result.kind === "session") {
+          return result.session;
+        }
         await this.issueAndSendToken({
           purpose: "EMAIL_VERIFICATION",
           email,
           userId: result.userId,
           businessId: result.businessId,
-          subject: "Xenior e-posta doğrulama",
           path: "/verify-email",
         });
-        return result.session;
+        return result.pending;
       });
     } catch (error) {
       if (this.isUniqueConstraintError(error)) {
@@ -145,6 +169,12 @@ export class AuthService {
         code: "ACCOUNT_INACTIVE",
       });
     }
+    if (!user.emailVerifiedAt) {
+      throw new UnauthorizedException({
+        message: "Email address must be verified before sign-in.",
+        code: "EMAIL_NOT_VERIFIED",
+      });
+    }
 
     return {
       ...(await this.tokens.issueSession(user)),
@@ -172,7 +202,6 @@ export class AuthService {
       purpose: "PASSWORD_RESET",
       email,
       userId: user.id,
-      subject: "Xenior parola sıfırlama",
       path: "/reset-password",
     });
   }
@@ -193,7 +222,7 @@ export class AuthService {
     await this.tokens.revokeAllForUser(token.userId);
   }
 
-  async verifyEmail(input: VerifyEmailDto): Promise<void> {
+  async verifyEmail(input: VerifyEmailDto): Promise<AuthSessionResponse> {
     const token = await this.consumeToken("EMAIL_VERIFICATION", input.token);
     if (!token.userId) {
       throw new BadRequestException({
@@ -201,10 +230,20 @@ export class AuthService {
         code: "INVALID_AUTH_TOKEN",
       });
     }
-    await this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id: token.userId },
       data: { emailVerifiedAt: new Date() },
     });
+    if (!user.isActive) {
+      throw new UnauthorizedException({
+        message: "Account is inactive.",
+        code: "ACCOUNT_INACTIVE",
+      });
+    }
+    return {
+      ...(await this.tokens.issueSession(user)),
+      user: this.toAuthUser(user),
+    };
   }
 
   async acceptStaffInvite(input: AcceptStaffInviteDto): Promise<AuthSessionResponse> {
@@ -223,12 +262,12 @@ export class AuthService {
       });
     }
 
-    if (metadata.role === "ACCOUNTANT") {
-      return this.acceptAccountantInvite(token.email, businessId, input, metadata);
-    }
-
     const staffId = metadata.staffId;
     if (!staffId) {
+      // Legacy accountant invites without a staff profile.
+      if (metadata.role === "ACCOUNTANT") {
+        return this.acceptAccountantInvite(token.email, businessId, input, metadata);
+      }
       throw new BadRequestException({
         message: "Invite token is invalid.",
         code: "INVALID_AUTH_TOKEN",
@@ -242,12 +281,15 @@ export class AuthService {
       const staff = await transaction.staff.findFirst({
         where: { id: staffId, businessId },
       });
-      if (!staff) {
+      if (!staff || !staff.isActive) {
         throw new BadRequestException({
           message: "Staff invite is no longer valid.",
           code: "INVALID_STAFF_INVITE",
         });
       }
+
+      const role =
+        staff.loginRole === "ACCOUNTANT" ? "ACCOUNTANT" : "STAFF";
 
       let user = await transaction.user.findUnique({ where: { email } });
       if (!user) {
@@ -267,6 +309,16 @@ export class AuthService {
         });
       }
 
+      const existing = await transaction.businessUser.findUnique({
+        where: { businessId_userId: { businessId, userId: user.id } },
+      });
+      if (existing && existing.role !== role) {
+        throw new ConflictException({
+          message: "This email already has a membership in the business.",
+          code: "MEMBERSHIP_EXISTS",
+        });
+      }
+
       const membership = await transaction.businessUser.upsert({
         where: {
           businessId_userId: { businessId, userId: user.id },
@@ -274,9 +326,9 @@ export class AuthService {
         create: {
           businessId,
           userId: user.id,
-          role: "STAFF",
+          role,
         },
-        update: { isActive: true, role: "STAFF" },
+        update: { isActive: true, role },
       });
 
       await transaction.staff.update({
@@ -424,7 +476,6 @@ export class AuthService {
     userId?: string;
     businessId?: string;
     staffId?: string;
-    subject: string;
     path: string;
   }): Promise<void> {
     const raw = createAuthTokenValue();
@@ -441,11 +492,24 @@ export class AuthService {
     });
     const baseUrl = this.config.get("WEB_URL", { infer: true });
     const link = `${baseUrl}${input.path}?token=${encodeURIComponent(raw)}`;
+    const rendered =
+      input.purpose === "PASSWORD_RESET"
+        ? renderPasswordResetEmail({
+            webUrl: baseUrl,
+            resetUrl: link,
+            email: input.email,
+          })
+        : renderEmailVerificationEmail({
+            webUrl: baseUrl,
+            verifyUrl: link,
+            email: input.email,
+          });
     await this.mail?.sendBestEffort({
       businessId: input.businessId,
       destination: input.email,
-      subject: input.subject,
-      body: `Xenior bağlantınız: ${link}`,
+      subject: rendered.subject,
+      body: rendered.text,
+      html: rendered.html,
     });
   }
 

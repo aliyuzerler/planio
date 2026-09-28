@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "51111111-1111-4111-8111-111111111111";
 const customerId = "52222222-2222-4222-8222-222222222222";
@@ -56,7 +57,16 @@ function pageOf(items: typeof customer[]) {
   };
 }
 
-test.beforeEach(async ({ context }) => {
+const emptyLedgerPage = {
+  items: [],
+  page: 1,
+  pageSize: 50,
+  total: 0,
+  totalPages: 0,
+  hasMore: false,
+};
+
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -66,6 +76,11 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  await mockSubscriptionAccess(page);
+  // Owner detail pages fetch ledger; an unmocked 401 from a live API logs the suite out.
+  await page.route("**/api/v1/ledger/entries**", (route) =>
+    route.fulfill({ json: emptyLedgerPage }),
+  );
 });
 
 test("owner lists, searches and creates a tenant-scoped customer", async ({
@@ -159,7 +174,7 @@ test("staff role receives read-only customer details and empty history", async (
   await page.goto(`/settings/customers/${customerId}`);
   await expect(
     page.getByText(
-      "STAFF rolü müşteri bilgilerini görüntüleyebilir ancak değiştiremez.",
+      "Personel rolü müşteri bilgilerini görüntüleyebilir ancak değiştiremez.",
     ),
   ).toBeVisible();
   await expect(
@@ -228,6 +243,7 @@ test("owner deactivates a customer and sees real appointment history", async ({
   await page.getByRole("button", { name: "Onayla" }).click();
   await expect(page.getByText("Değişiklik kaydedildi.").first()).toBeVisible();
   await expect(page.getByText("Pasif müşteri")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Aktifleştir" })).toBeVisible();
 });
 
 test("owner sees cari balance and can upload a KVKK file", async ({ page }) => {
@@ -269,5 +285,5 @@ test("owner sees cari balance and can upload a KVKK file", async ({ page }) => {
   });
   await page.getByRole("button", { name: "Yükle" }).click();
   await expect(page.getByText("kvkk.pdf")).toBeVisible();
-  await expect(page.getByText("KVKK belgesi")).toBeVisible();
+  await expect(page.getByText(/KVKK belgesi ·/)).toBeVisible();
 });

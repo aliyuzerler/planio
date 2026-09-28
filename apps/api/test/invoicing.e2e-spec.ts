@@ -19,6 +19,7 @@ import { HttpExceptionFilter } from "../src/common/filters/http-exception.filter
 import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 import { InvoicingModule } from "../src/invoicing/invoicing.module";
 import { LedgerModule } from "../src/ledger/ledger.module";
 import { NotificationsModule } from "../src/notifications/notifications.module";

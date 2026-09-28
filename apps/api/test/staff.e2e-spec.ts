@@ -17,6 +17,7 @@ import { HttpExceptionFilter } from "../src/common/filters/http-exception.filter
 import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 import { StaffModule } from "../src/staff/staff.module";
 
 describe("Staff management (e2e)", () => {
@@ -84,34 +85,11 @@ describe("Staff management (e2e)", () => {
       where: { email: { in: Object.values(emails) } },
       select: { id: true },
     });
-    const userIds = users.map((user) => user.id);
-    await prisma.auditLog.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.staffSpecialization.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.staff.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.specialization.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.staffHours.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.subscription.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.authToken.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.refreshToken.deleteMany({ where: { userId: { in: userIds } } });
-    await prisma.businessUser.deleteMany({ where: { userId: { in: userIds } } });
-    await prisma.business.deleteMany({
-      where: { id: { in: [businessAId, businessBId] } },
-    });
-    await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+    await cleanupTenantFixtures(
+      prisma,
+      [businessAId, businessBId],
+      users.map((user) => user.id),
+    );
     await app.close();
   });
 
@@ -147,7 +125,7 @@ describe("Staff management (e2e)", () => {
       .set("Authorization", `Bearer ${tokenA}`)
       .set(TENANT_HEADER, businessAId)
       .send({
-        firstName: "Ada",
+        loginRole: "STAFF", firstName: "Ada",
         lastName: "Lovelace",
         phone: "+905551112233",
         email: "ADA@EXAMPLE.TEST",
@@ -254,7 +232,7 @@ describe("Staff management (e2e)", () => {
         .post("/api/v1/staff")
         .set("Authorization", `Bearer ${tokenB}`)
         .set(TENANT_HEADER, businessBId)
-        .send({ firstName: "Grace", lastName: "Hopper" })
+        .send({ loginRole: "STAFF", firstName: "Grace", lastName: "Hopper" })
         .expect(201)
     ).body.id as string;
 
@@ -300,7 +278,7 @@ describe("Staff management (e2e)", () => {
         .post("/api/v1/staff")
         .set("Authorization", `Bearer ${tokenA}`)
         .set(TENANT_HEADER, businessAId)
-        .send({ firstName: "No", lastName: "Access" })
+        .send({ loginRole: "STAFF", firstName: "No", lastName: "Access" })
         .expect(403);
       expect(denied.body.code).toBe("INSUFFICIENT_BUSINESS_ROLE");
     } finally {

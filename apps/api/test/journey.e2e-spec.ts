@@ -19,6 +19,7 @@ import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { CustomersModule } from "../src/customers/customers.module";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 import { PaymentsModule } from "../src/payments/payments.module";
 import { ServicesModule } from "../src/services/services.module";
 import { StaffModule } from "../src/staff/staff.module";
@@ -76,35 +77,12 @@ describe("Critical business journey (e2e)", () => {
 
   afterAll(async () => {
     if (!prisma) return;
-    if (businessId) {
-      await prisma.appointmentEvent.deleteMany({ where: { businessId } });
-      await prisma.checkoutIntent.deleteMany({ where: { businessId } });
-      await prisma.officialDocument.deleteMany({ where: { businessId } });
-      await prisma.tenantUyumsoftSettings.deleteMany({ where: { businessId } });
-      await prisma.tenantPaymentSettings.deleteMany({ where: { businessId } });
-      await prisma.customerLedgerEntry.deleteMany({ where: { businessId } });
-      await prisma.collection.deleteMany({ where: { businessId } });
-      await prisma.salesReceipt.deleteMany({ where: { businessId } });
-      await prisma.expense.deleteMany({ where: { businessId } });
-      await prisma.sale.deleteMany({ where: { businessId } });
-      await prisma.cashAccount.deleteMany({ where: { businessId } });
-      await prisma.appointment.deleteMany({ where: { businessId } });
-      await prisma.payment.deleteMany({ where: { businessId } });
-      await prisma.subscription.deleteMany({ where: { businessId } });
-      await prisma.customer.deleteMany({ where: { businessId } });
-      await prisma.staff.deleteMany({ where: { businessId } });
-      await prisma.auditLog.deleteMany({ where: { businessId } });
-      await prisma.service.deleteMany({ where: { businessId } });
-    }
     const user = await prisma.user.findUnique({ where: { email } });
-    if (user) {
-      await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
-      await prisma.businessUser.deleteMany({ where: { userId: user.id } });
-      if (businessId) {
-        await prisma.business.deleteMany({ where: { id: businessId } });
-      }
-      await prisma.user.deleteMany({ where: { id: user.id } });
-    }
+    await cleanupTenantFixtures(
+      prisma,
+      businessId ? [businessId] : [],
+      user ? [user.id] : [],
+    );
     await app.close();
   });
 
@@ -137,7 +115,7 @@ describe("Critical business journey (e2e)", () => {
       .post("/api/v1/staff")
       .set("Authorization", `Bearer ${accessToken}`)
       .set(TENANT_HEADER, businessId)
-      .send({ firstName: "Stylist", lastName: "One" })
+      .send({ loginRole: "STAFF", firstName: "Stylist", lastName: "One" })
       .expect(201);
     const service = await request(app.getHttpServer())
       .post("/api/v1/services")
@@ -185,7 +163,7 @@ describe("Critical business journey (e2e)", () => {
       .set("Authorization", `Bearer ${accessToken}`)
       .set(TENANT_HEADER, businessId)
       .expect(200);
-    expect(beforePay.body).toBeNull();
+    expect(beforePay.body.status).toBe("TRIALING");
 
     const plan = await prisma.plan.findFirstOrThrow({
       where: { name: "Starter", billingPeriod: "MONTHLY", isActive: true },

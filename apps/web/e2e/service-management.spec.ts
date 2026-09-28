@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "41111111-1111-4111-8111-111111111111";
 const serviceId = "42222222-2222-4222-8222-222222222222";
@@ -40,7 +41,7 @@ const service = {
   updatedAt: now,
 };
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -50,6 +51,7 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  await mockSubscriptionAccess(page);
 });
 
 test("owner lists and creates a decimal-safe tenant service", async ({
@@ -104,7 +106,7 @@ test("staff sees service details as read-only", async ({ page }) => {
   await page.goto(`/settings/services/${serviceId}`);
   await expect(
     page.getByText(
-      "STAFF rolü hizmet bilgilerini görüntüleyebilir ancak değiştiremez.",
+      "Personel rolü hizmet bilgilerini görüntüleyebilir ancak değiştiremez.",
     ),
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "Düzenle" })).toHaveCount(0);

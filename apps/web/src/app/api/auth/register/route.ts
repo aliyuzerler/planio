@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { authSessionResponseSchema } from "@xenior/validation";
+import {
+  authSessionResponseSchema,
+  registerPendingResponseSchema,
+} from "@xenior/validation";
 import {
   REFRESH_COOKIE_NAME,
   refreshCookieOptions,
@@ -19,6 +22,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   if (!upstream.ok) {
     return NextResponse.json(payload, { status: upstream.status });
+  }
+
+  const pending = registerPendingResponseSchema.safeParse(payload);
+  if (pending.success) {
+    return NextResponse.json(pending.data, { status: 201 });
   }
 
   const parsed = authSessionResponseSchema.safeParse(payload);

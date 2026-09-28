@@ -44,6 +44,10 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
   SUBSCRIPTION_CANCELLED: "Abonelik iptal edildi",
 };
 
+export const AUDIT_ACTION_FILTER_OPTIONS = Object.entries(AUDIT_ACTION_LABELS)
+  .map(([value, label]) => ({ value, label }))
+  .sort((a, b) => a.label.localeCompare(b.label, "tr"));
+
 const AUDIT_ENTITY_LABELS: Record<string, string> = {
   Appointment: "Randevu",
   Business: "İşletme",
@@ -85,8 +89,17 @@ export function auditEntityLabel(entityType: string): string {
   return AUDIT_ENTITY_LABELS[entityType] ?? humanizeCode(entityType);
 }
 
+/** Detail line for owners: prefers resolved summary, never shows technical refs. */
+export function formatAuditDetail(
+  entityType: string,
+  summary: string | null | undefined,
+): string {
+  if (summary?.trim()) return summary.trim();
+  return auditEntityLabel(entityType);
+}
+
+/** @deprecated Prefer formatAuditDetail with server summary */
 export function formatAuditEntity(entityType: string, entityId: string): string {
-  const label = auditEntityLabel(entityType);
-  const shortId = entityId.slice(0, 8);
-  return `${label} · ref ${shortId}`;
+  void entityId;
+  return auditEntityLabel(entityType);
 }

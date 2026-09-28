@@ -99,7 +99,7 @@ const business = {
   updatedAt: now,
 };
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -109,6 +109,11 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  // Subscription page always mounts AvailablePlans → useBusinessProfile / usePayments.
+  await page.route("**/api/v1/business", (route) =>
+    route.fulfill({ json: business }),
+  );
+  await page.route("**/api/v1/payments", (route) => route.fulfill({ json: [] }));
 });
 
 test("owner sees plans, pays with iyzico, and views subscription status", async ({
@@ -215,6 +220,7 @@ test("owner sees plans, pays with iyzico, and views subscription status", async 
   await page.getByLabel("GSM").fill("+905551112233");
   await page.getByLabel("Adres").fill("Test Street 1");
   await page.getByLabel("Şehir").fill("Istanbul");
+  await page.getByLabel("Mesafeli satış sözleşmesini kabul ediyorum").check();
   await page.getByRole("button", { name: "iyzico ile öde" }).click();
   await expect(page.getByText("Ödeme doğrulandı. Abonelik aktif.").first()).toBeVisible();
   await expect(page.getByText("Aktif", { exact: true })).toBeVisible();
@@ -262,8 +268,32 @@ test("expired license redirects write screens to subscription", async ({
     route.fulfill({ json: access(starterMonthly, "EXPIRED") }),
   );
   await page.route("**/api/v1/payments", (route) => route.fulfill({ json: [] }));
+  // Appointment form mounts briefly before paywall redirect; keep live API 401s from logging out.
+  await page.route("**/api/v1/business", (route) =>
+    route.fulfill({ json: business }),
+  );
+  await page.route("**/api/v1/staff**", (route) => route.fulfill({ json: [] }));
+  await page.route("**/api/v1/services**", (route) =>
+    route.fulfill({ json: [] }),
+  );
+  await page.route("**/api/v1/resources**", (route) =>
+    route.fulfill({ json: [] }),
+  );
+  await page.route("**/api/v1/customers**", (route) =>
+    route.fulfill({
+      json: {
+        items: [],
+        page: 1,
+        pageSize: 100,
+        total: 0,
+        totalPages: 0,
+        hasMore: false,
+      },
+    }),
+  );
 
   await page.goto("/settings/appointments/new");
+  await expect(page).toHaveURL(/\/settings\/subscription$/);
   await expect(page.getByRole("heading", { name: "Abonelik" })).toBeVisible();
   await expect(
     page.getByText("İşletme lisansının süresi doldu. Yazma ekranları kilitli."),

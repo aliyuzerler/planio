@@ -55,6 +55,7 @@ export interface CommissionEntryRecord {
   currency: string;
   earnedAt: string;
   createdAt: string;
+  payoutExpenseId: string | null;
 }
 
 export interface ListCommissionEntriesQuery {

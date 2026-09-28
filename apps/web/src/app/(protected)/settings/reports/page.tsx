@@ -1,22 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button } from "@xenior/ui";
+import { Download } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
-import { PageHeader } from "@/components/ui/page-header";
 import { QueryState } from "@/components/ui/query-state";
-import {
-  DataTable,
-  DataTableBody,
-  DataTableCell,
-  DataTableHead,
-  DataTableHeaderCell,
-  DataTableRow,
-} from "@/components/ui/data-table";
 import { useCanReadReports, useFinanceSummary } from "@/lib/reports/reports-queries";
 import type { FinanceSummaryReport } from "@xenior/types";
 
-const ACCOUNT_TYPE = { CASH: "Nakit", BANK: "Banka" };
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+const fieldClass =
+  "rounded-xl border-0 bg-white px-3 py-2.5 text-[15px] text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none transition focus:ring-2 focus:ring-[#7eb8c8]";
+
+const ACCOUNT_TYPE = { CASH: "Nakit", BANK: "Banka" } as const;
 const EXPENSE_LABEL: Record<string, string> = {
   RENT: "Kira",
   UTILITY: "Fatura",
@@ -34,42 +29,75 @@ export default function ReportsPage() {
   if (!canRead) {
     return (
       <PageFrame>
-        <p className="text-sm text-zinc-600">Bu raporlar muhasebe ve sahip içindir.</p>
+        <p className="text-sm text-[#5a7380]">
+          Bu raporlar muhasebe ve sahip içindir.
+        </p>
       </PageFrame>
     );
   }
 
   return (
-    <PageFrame width="lg">
-      <PageHeader
-        title="Raporlar"
-        description="Günlük kasa, cari alacak, prim ve gider özeti. Tam gelir tablosu değildir."
-        actions={
-          summary.data ? (
-            <Button type="button" variant="outline" onClick={() => downloadCsv(summary.data)}>
-              CSV indir
-            </Button>
-          ) : null
-        }
+    <PageFrame width="lg" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
       />
-      <label className="mt-4 flex max-w-xs flex-col gap-1 text-sm">
-        Tarih
-        <input
-          type="date"
-          value={date}
-          onChange={(event) => setDate(event.target.value)}
-          className="rounded-md border border-zinc-300 px-3 py-2"
-        />
-      </label>
-      <p className="mt-1 text-xs text-zinc-500">Boş bırakınca işletme saat diliminde bugün kullanılır.</p>
-      <QueryState
-        isLoading={summary.isLoading}
-        isError={summary.isError}
-        loading="Rapor yükleniyor…"
-        error="Rapor yüklenemedi."
-      >
-        {summary.data ? <ReportBody report={summary.data} /> : null}
-      </QueryState>
+
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Finans
+          </p>
+          <h1
+            className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+            style={displayFont}
+          >
+            Raporlar
+          </h1>
+          <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[#5a7380]">
+            Günlük kasa, cari alacak, prim ve gider özeti. Tam gelir tablosu
+            değildir.
+          </p>
+        </div>
+        {summary.data ? (
+          <button
+            type="button"
+            onClick={() => downloadCsv(summary.data)}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#2f5563] ring-1 ring-[#c5dde6] transition hover:bg-[#eef6f8]"
+          >
+            <Download className="h-4 w-4" />
+            CSV indir
+          </button>
+        ) : null}
+      </div>
+
+      <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-4 py-3 sm:px-5">
+          <label className="flex max-w-xs flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+            Tarih
+            <input
+              type="date"
+              value={date}
+              onChange={(event) => setDate(event.target.value)}
+              className={fieldClass}
+            />
+          </label>
+          <p className="mt-2 text-[12px] text-[#5a7380]">
+            Boş bırakınca işletme saat diliminde bugün kullanılır.
+          </p>
+        </div>
+
+        <div className="p-4 sm:p-5">
+          <QueryState
+            isLoading={summary.isLoading}
+            isError={summary.isError}
+            loading="Rapor yükleniyor…"
+            error="Rapor yüklenemedi."
+          >
+            {summary.data ? <ReportBody report={summary.data} /> : null}
+          </QueryState>
+        </div>
+      </div>
     </PageFrame>
   );
 }
@@ -84,53 +112,67 @@ function ReportBody({ report }: { report: FinanceSummaryReport }) {
   );
 
   return (
-    <div className="mt-6 space-y-8">
+    <div className="space-y-8">
       <section aria-label="Günlük kasa">
-        <h2 className="text-lg font-semibold">Günlük kasa</h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          {report.date} · {report.timezone}
-        </p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <StatCard
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+            Günlük kasa
+          </h2>
+          <p className="mt-1 text-[13px] text-[#5a7380]">
+            {report.date} · {report.timezone}
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <StatBlock
             label="Tahsilat"
             value={`${report.cash.collectionsIn} ${report.currency}`}
           />
-          <StatCard
+          <StatBlock
             label="Gider"
             value={`${report.cash.expensesOut} ${report.currency}`}
           />
-          <StatCard label="Net" value={`${report.cash.net} ${report.currency}`} />
+          <StatBlock
+            label="Net"
+            value={`${report.cash.net} ${report.currency}`}
+          />
         </div>
-        <DataTable caption="Kasa bakiyeleri" className="mt-4">
-          <DataTableHead>
-            <DataTableRow>
-              <DataTableHeaderCell>Hesap</DataTableHeaderCell>
-              <DataTableHeaderCell>Tür</DataTableHeaderCell>
-              <DataTableHeaderCell>Bakiye</DataTableHeaderCell>
-            </DataTableRow>
-          </DataTableHead>
-          <DataTableBody>
+        {report.cash.accounts.length > 0 ? (
+          <ul className="mt-4 divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
             {report.cash.accounts.map((account) => (
-              <DataTableRow key={account.id}>
-                <DataTableCell>{account.name}</DataTableCell>
-                <DataTableCell>{ACCOUNT_TYPE[account.type]}</DataTableCell>
-                <DataTableCell>
+              <li
+                key={account.id}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                    {account.name}
+                  </p>
+                  <p className="mt-0.5 text-[13px] text-[#5a7380]">
+                    {ACCOUNT_TYPE[account.type]}
+                  </p>
+                </div>
+                <p className="text-[15px] font-semibold tabular-nums text-[#2f5563]">
                   {account.balance} {report.currency}
-                </DataTableCell>
-              </DataTableRow>
+                </p>
+              </li>
             ))}
-          </DataTableBody>
-        </DataTable>
+          </ul>
+        ) : null}
       </section>
 
       <section aria-label="Cari alacak">
-        <h2 className="text-lg font-semibold">Cari alacak</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <StatCard
+        <h2
+          className="mb-4 text-lg font-semibold text-[#2f5563]"
+          style={displayFont}
+        >
+          Cari alacak
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <StatBlock
             label="Toplam alacak"
             value={`${report.receivables.totalOutstanding} ${report.currency}`}
           />
-          <StatCard
+          <StatBlock
             label="Alacaklı müşteri"
             value={String(report.receivables.customerCount)}
           />
@@ -138,13 +180,18 @@ function ReportBody({ report }: { report: FinanceSummaryReport }) {
       </section>
 
       <section aria-label="Prim toplamı">
-        <h2 className="text-lg font-semibold">Prim toplamı</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <StatCard
+        <h2
+          className="mb-4 text-lg font-semibold text-[#2f5563]"
+          style={displayFont}
+        >
+          Prim toplamı
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <StatBlock
             label="Günlük prim"
             value={`${report.commissions.totalAmount} ${report.currency}`}
           />
-          <StatCard
+          <StatBlock
             label="Satır"
             value={String(report.commissions.entryCount)}
           />
@@ -152,38 +199,45 @@ function ReportBody({ report }: { report: FinanceSummaryReport }) {
       </section>
 
       <section aria-label="Gider">
-        <h2 className="text-lg font-semibold">Gider</h2>
-        <DataTable caption="Gider kategorileri" className="mt-4">
-          <DataTableHead>
-            <DataTableRow>
-              <DataTableHeaderCell>Kategori</DataTableHeaderCell>
-              <DataTableHeaderCell>Tutar</DataTableHeaderCell>
-            </DataTableRow>
-          </DataTableHead>
-          <DataTableBody>
-            {expenseRows.map((row) => (
-              <DataTableRow key={row.category}>
-                <DataTableCell>
-                  {EXPENSE_LABEL[row.category] ?? row.category}
-                </DataTableCell>
-                <DataTableCell>
-                  {row.amount} {report.currency}
-                </DataTableCell>
-              </DataTableRow>
-            ))}
-          </DataTableBody>
-        </DataTable>
+        <h2
+          className="mb-4 text-lg font-semibold text-[#2f5563]"
+          style={displayFont}
+        >
+          Gider
+        </h2>
+        <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+          {expenseRows.map((row) => (
+            <li
+              key={row.category}
+              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5"
+            >
+              <p className="text-[15px] font-semibold text-[#1e3340]">
+                {EXPENSE_LABEL[row.category] ?? row.category}
+              </p>
+              <p className="text-[15px] font-semibold tabular-nums text-[#2f5563]">
+                {row.amount} {report.currency}
+              </p>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatBlock({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-xl border border-zinc-200 bg-white p-4">
-      <p className="text-sm text-zinc-600">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
-    </article>
+    <div className="rounded-xl bg-[#F7FBFC] px-4 py-4 ring-1 ring-[#e4f0f4]">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+        {label}
+      </p>
+      <p
+        className="mt-2 text-2xl font-semibold tracking-tight tabular-nums text-[#2f5563]"
+        style={displayFont}
+      >
+        {value}
+      </p>
+    </div>
   );
 }
 

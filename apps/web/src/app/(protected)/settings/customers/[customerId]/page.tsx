@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@xenior/ui";
+import { ArrowLeft, Pencil, Wallet } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageFrame } from "@/components/ui/page-frame";
 import { useToast } from "@/components/ui/toast";
@@ -19,6 +19,8 @@ import {
 import { useAuthStore } from "@/stores/auth-store";
 import { CustomerFiles } from "@/app/(protected)/settings/_components/customer-files";
 import { useCanReadCash, useLedgerEntries } from "@/lib/ledger/ledger-queries";
+
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 
 export default function CustomerDetailPage() {
   const { customerId } = useParams<{ customerId: string }>();
@@ -42,7 +44,14 @@ export default function CustomerDetailPage() {
     setMessage(null);
     setSaving(true);
     try {
-      await updateCustomer(customerId, { isActive: !customer.data.isActive });
+      const updated = await updateCustomer(customerId, {
+        isActive: !customer.data.isActive,
+      });
+      const businessId = useAuthStore.getState().selectedBusinessId;
+      queryClient.setQueryData(
+        ["customers", businessId, customerId],
+        updated,
+      );
       await queryClient.invalidateQueries({ queryKey: ["customers"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       setMessage("Değişiklik kaydedildi.");
@@ -67,108 +76,170 @@ export default function CustomerDetailPage() {
   const appointments = history.data;
 
   return (
-    <PageFrame width="sm">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <PageFrame width="md" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
+      />
+
+      <Link
+        href="/settings/customers"
+        className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3d6b7a] hover:text-[#2f5563]"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Müşteri listesine dön
+      </Link>
+
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Müşteri kartı
+          </p>
+          <h1
+            className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+            style={displayFont}
+          >
             {person.firstName} {person.lastName}
           </h1>
-          <p className="mt-1 text-sm text-zinc-600">
-            {person.isActive ? "Aktif müşteri" : "Pasif müşteri"}
-          </p>
-          <p className="mt-1 text-sm font-medium text-zinc-800">
-            Cari: {formatLedgerBalance(person.ledgerBalance)} TRY
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <StatusBadge active={person.isActive} />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef6f8] px-2.5 py-0.5 text-[12px] font-semibold text-[#3d6b7a]">
+              <Wallet className="h-3.5 w-3.5" />
+              Cari: {formatLedgerBalance(person.ledgerBalance)} TRY
+            </span>
+          </div>
         </div>
         {canManage ? (
-          <div className="flex gap-2">
-            <Button asChild variant="outline">
-              <Link href={`/settings/customers/${customerId}/edit`}>
-                Düzenle
-              </Link>
-            </Button>
-            <Button
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/settings/customers/${customerId}/edit`}
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#2f5563] shadow-sm ring-1 ring-[#c5dde6]/80 transition hover:bg-[#eef6f8]"
+            >
+              <Pencil className="h-4 w-4" />
+              Düzenle
+            </Link>
+            <button
+              type="button"
               onClick={() => setConfirmToggle(true)}
               disabled={saving}
-              variant="outline"
+              className="inline-flex items-center rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60"
             >
               {person.isActive ? "Pasifleştir" : "Aktifleştir"}
-            </Button>
+            </button>
           </div>
         ) : null}
       </div>
 
       {!canManage ? (
-        <p className="mt-6 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+        <p className="mt-6 rounded-xl bg-[#eef6f8] px-4 py-3 text-sm leading-6 text-[#3d6b7a] ring-1 ring-[#c5dde6]/70">
           {role === "ACCOUNTANT"
             ? "Muhasebe rolü müşteri kartını ve belgeleri görüntüleyebilir; düzenleyemez."
-            : "STAFF rolü müşteri bilgilerini görüntüleyebilir ancak değiştiremez."}
+            : "Personel rolü müşteri bilgilerini görüntüleyebilir ancak değiştiremez."}
         </p>
       ) : null}
 
-      <dl className="mt-6 grid gap-4 rounded-xl border border-zinc-200 p-6 sm:grid-cols-2">
-        <Detail label="Telefon" value={person.phone} />
-        <Detail label="E-posta" value={person.email} />
-        <Detail label="Doğum tarihi" value={person.birthDate} />
-        <Detail label="Notlar" value={person.notes} wide />
-      </dl>
-
-      <section className="mt-6 rounded-xl border border-zinc-200 p-6">
-        <h2 className="text-lg font-semibold">Randevu geçmişi</h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          Yalnızca bu müşteriye ait gerçek randevular gösterilir.
-        </p>
-        {history.isLoading ? (
-          <p className="mt-4 text-sm text-zinc-600">Geçmiş yükleniyor…</p>
-        ) : null}
-        {appointments?.items.length ? (
-          <ul className="mt-4 grid gap-3">
-            {appointments.items.map((appointment) => (
-              <li
-                key={appointment.id}
-                className="rounded-lg border border-zinc-200 p-3 text-sm"
-              >
-                <p className="font-medium">{appointment.serviceNameSnapshot}</p>
-                <p className="text-zinc-600">
-                  {new Date(appointment.startAt).toLocaleString("tr-TR")} ·{" "}
-                  {appointment.staff.firstName} {appointment.staff.lastName}
-                </p>
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <p className="text-zinc-600">
-                    {appointment.servicePriceSnapshot} {appointment.currency}
-                  </p>
-                  <AppointmentStatusBadge status={appointment.status} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : history.isSuccess ? (
-          <p className="mt-4 text-sm text-zinc-600">
-            Bu müşteri için henüz randevu kaydı yok.
-          </p>
-        ) : null}
+      <section className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+          <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+            İletişim ve notlar
+          </h2>
+        </div>
+        <dl className="grid gap-4 p-5 sm:grid-cols-2">
+          <Detail label="Telefon" value={person.phone} />
+          <Detail label="E-posta" value={person.email} />
+          <Detail label="Doğum tarihi" value={person.birthDate} />
+          <Detail label="Notlar" value={person.notes} wide />
+        </dl>
       </section>
 
-      {canReadCash ? (
-        <section className="mt-6 rounded-xl border border-zinc-200 p-6">
-          <h2 className="text-lg font-semibold">Cari hareketler</h2>
-          {ledger.data?.items.length ? (
-            <ul className="mt-3 grid gap-2 text-sm">
-              {ledger.data.items.map((entry) => (
-                <li key={entry.id}>
-                  {entry.description} · {entry.amount} TRY · bakiye {entry.balanceAfter}
+      <section className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+          <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+            Randevu geçmişi
+          </h2>
+          <p className="mt-0.5 text-[13px] text-[#5a7380]">
+            Yalnızca bu müşteriye ait gerçek randevular gösterilir.
+          </p>
+        </div>
+        <div className="px-2 py-2 sm:px-3">
+          {history.isLoading ? (
+            <p className="px-3 py-6 text-sm text-[#5a7380]">Geçmiş yükleniyor…</p>
+          ) : null}
+          {appointments?.items.length ? (
+            <ul className="divide-y divide-[#e4f0f4]">
+              {appointments.items.map((appointment) => (
+                <li key={appointment.id}>
+                  <Link
+                    href={`/settings/appointments/${appointment.id}`}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl px-3 py-3 transition hover:bg-[#eef6f8]"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                        {appointment.serviceNameSnapshot}
+                      </p>
+                      <p className="mt-0.5 text-[13px] text-[#5a7380]">
+                        {new Date(appointment.startAt).toLocaleString("tr-TR")} ·{" "}
+                        {appointment.staff.firstName} {appointment.staff.lastName}
+                      </p>
+                      <p className="mt-1 text-[12px] font-semibold text-[#3d6b7a]">
+                        {appointment.servicePriceSnapshot} {appointment.currency}
+                      </p>
+                    </div>
+                    <AppointmentStatusBadge status={appointment.status} />
+                  </Link>
                 </li>
               ))}
             </ul>
-          ) : (
-            <p className="mt-3 text-sm text-zinc-600">Henüz cari hareket yok.</p>
-          )}
+          ) : history.isSuccess ? (
+            <p className="px-3 py-6 text-sm text-[#5a7380]">
+              Bu müşteri için henüz randevu kaydı yok.
+            </p>
+          ) : null}
+        </div>
+      </section>
+
+      {canReadCash ? (
+        <section className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+          <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+            <h2
+              className="text-lg font-semibold text-[#2f5563]"
+              style={displayFont}
+            >
+              Cari hareketler
+            </h2>
+          </div>
+          <div className="px-2 py-2 sm:px-3">
+            {ledger.data?.items.length ? (
+              <ul className="divide-y divide-[#e4f0f4]">
+                {ledger.data.items.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className="flex flex-wrap items-center justify-between gap-2 px-3 py-3 text-[13px]"
+                  >
+                    <span className="font-medium text-[#1e3340]">
+                      {entry.description}
+                    </span>
+                    <span className="font-semibold text-[#3d6b7a]">
+                      {entry.amount} TRY · bakiye {entry.balanceAfter}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="px-3 py-6 text-sm text-[#5a7380]">
+                Henüz cari hareket yok.
+              </p>
+            )}
+          </div>
         </section>
       ) : null}
 
-      <CustomerFiles customerId={customerId} canManage={canManage} />
+      <div className="mt-6">
+        <CustomerFiles customerId={customerId} canManage={canManage} />
+      </div>
+
       {message ? (
-        <p role="status" className="mt-4 text-sm text-zinc-700">
+        <p role="status" className="mt-4 text-sm font-medium text-[#3d6b7a]">
           {message}
         </p>
       ) : null}
@@ -185,6 +256,20 @@ export default function CustomerDetailPage() {
   );
 }
 
+function StatusBadge({ active }: { active: boolean }) {
+  return (
+    <span
+      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+        active
+          ? "bg-[#b8e6df]/45 text-[#2f5563]"
+          : "bg-[#e4f0f4] text-[#5a7380]"
+      }`}
+    >
+      {active ? "Aktif müşteri" : "Pasif müşteri"}
+    </span>
+  );
+}
+
 function Detail({
   label,
   value,
@@ -195,9 +280,17 @@ function Detail({
   wide?: boolean;
 }) {
   return (
-    <div className={wide ? "sm:col-span-2" : undefined}>
-      <dt className="text-xs uppercase text-zinc-500">{label}</dt>
-      <dd className="mt-1 text-sm">{value || "—"}</dd>
+    <div
+      className={`rounded-xl bg-[#F7FBFC] px-4 py-3 ring-1 ring-[#e4f0f4] ${
+        wide ? "sm:col-span-2" : ""
+      }`}
+    >
+      <dt className="text-[11px] font-semibold uppercase tracking-wide text-[#7eb8c8]">
+        {label}
+      </dt>
+      <dd className="mt-1 text-[15px] font-medium text-[#1e3340]">
+        {value || "—"}
+      </dd>
     </div>
   );
 }
@@ -205,7 +298,7 @@ function Detail({
 function PageMessage({ children }: { children: ReactNode }) {
   return (
     <PageFrame>
-      <p className="text-sm text-zinc-600">{children}</p>
+      <p className="text-sm text-[#5a7380]">{children}</p>
     </PageFrame>
   );
 }

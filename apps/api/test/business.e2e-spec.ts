@@ -18,6 +18,7 @@ import { HttpExceptionFilter } from "../src/common/filters/http-exception.filter
 import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 
 describe("Business management (e2e)", () => {
   let app: INestApplication<App>;
@@ -83,25 +84,11 @@ describe("Business management (e2e)", () => {
       where: { email: { in: Object.values(emails) } },
       select: { id: true },
     });
-    const userIds = users.map((user) => user.id);
-    await prisma.auditLog.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.authToken.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.subscription.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.privacyConsent.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.refreshToken.deleteMany({ where: { userId: { in: userIds } } });
-    await prisma.businessUser.deleteMany({ where: { userId: { in: userIds } } });
-    await prisma.business.deleteMany({
-      where: { id: { in: [businessAId, businessBId] } },
-    });
-    await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+    await cleanupTenantFixtures(
+      prisma,
+      [businessAId, businessBId],
+      users.map((user) => user.id),
+    );
     await app.close();
   });
 
@@ -224,7 +211,10 @@ describe("Business management (e2e)", () => {
         purpose: "STAFF_INVITE",
       },
     });
-    expect(invite.metadata).toMatchObject({ role: "ACCOUNTANT" });
+    expect(invite.metadata).toMatchObject({
+      role: "ACCOUNTANT",
+      staffId: expect.any(String),
+    });
 
     const { createAuthTokenValue, hashAuthToken } = await import(
       "../src/auth/auth-token"

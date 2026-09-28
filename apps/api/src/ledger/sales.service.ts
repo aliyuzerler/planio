@@ -346,7 +346,11 @@ export class SalesService {
           action: "SALES_RECEIPT_ISSUED",
           entityType: "SalesReceipt",
           entityId: receipt.id,
-          metadata: { fields: ["receiptNo"] },
+          metadata: {
+            receiptNo: receipt.receiptNo,
+            customerName: `${sale.customer.firstName} ${sale.customer.lastName}`.trim(),
+            amount: sale.totalAmount.toFixed(2),
+          },
         },
         transaction,
       );

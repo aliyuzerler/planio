@@ -67,13 +67,25 @@ export function useDashboardOverview() {
         },
         {
           queryKey: ["dashboard", businessId, "staff"],
-          queryFn: () => listStaff({ isActive: true }),
+          queryFn: () => listStaff({ isActive: true, loginRole: "STAFF" }),
           enabled: Boolean(businessId) && operational,
         },
       ],
     });
 
   const upcomingItems = upcomingQuery.data?.items ?? [];
+  const todayItems = todayQuery.data?.items ?? [];
+  const now =
+    todayQuery.dataUpdatedAt ||
+    upcomingQuery.dataUpdatedAt ||
+    completedQuery.dataUpdatedAt ||
+    cancelledQuery.dataUpdatedAt;
+  const nextToday = todayItems
+    .filter((item) => item.status === "CONFIRMED" && new Date(item.startAt).getTime() >= now)
+    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())[0];
+  const todayConfirmed = todayItems.filter((item) => item.status === "CONFIRMED").length;
+  const todayCompleted = todayItems.filter((item) => item.status === "COMPLETED").length;
+  const todayCancelled = todayItems.filter((item) => item.status === "CANCELLED").length;
 
   return {
     isLoading:
@@ -93,10 +105,15 @@ export function useDashboardOverview() {
       customersQuery.isError ||
       staffQuery.isError,
     today,
-    todayAppointments: todayQuery.data?.items ?? [],
+    todayAppointments: todayItems,
     todayCount: todayQuery.data?.total ?? 0,
+    todayConfirmed,
+    todayCompletedLocal: todayCompleted,
+    todayCancelledLocal: todayCancelled,
+    nextTodayAppointment: nextToday ?? null,
     upcomingAppointments: upcomingItems,
     upcomingCount: upcomingItems.length,
+    nextUpcomingAppointment: upcomingItems[0] ?? null,
     completedCount: completedQuery.data?.total ?? 0,
     cancelledCount: cancelledQuery.data?.total ?? 0,
     customerCount: customersQuery.data?.total ?? 0,

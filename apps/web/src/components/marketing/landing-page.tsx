@@ -18,6 +18,31 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { Marquee, Reveal } from "@/components/marketing/motion";
+
+const CAPABILITY_MARQUEE = [
+  "Akıllı randevu",
+  "Otomatik hatırlatma",
+  "Müşteri kartı",
+  "Personel prim",
+  "Kasa & cari",
+  "Paket & seans",
+  "POS tahsilat",
+  "e-Fatura hazırlığı",
+  "Rol bazlı yetki",
+  "Çok şube",
+];
+
+const TRUST_MARQUEE = [
+  "KVKK uyumlu altyapı",
+  "Bulut panel",
+  "Mobil hazır",
+  "Denetim kaydı",
+  "Hızlı kurulum",
+  "Tek panel operasyon",
+  "Abonelik şeffaf",
+  "Destek: destek@planio.app",
+];
 
 function Pill({ children }: { children: ReactNode }) {
   return (
@@ -74,19 +99,19 @@ export function LandingPage() {
   return (
     <main className="w-full bg-[#F7FBFC]">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#F7FBFC] via-[#eef6f8]/70 to-[#F7FBFC] pb-24 pt-10">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#F7FBFC] via-[#eef6f8]/70 to-[#F7FBFC] pb-16 pt-10">
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-24 left-1/2 h-[480px] w-[920px] -translate-x-1/2 rounded-full bg-[#b8e6df]/35 blur-[120px]"
+          className="planio-glow-drift pointer-events-none absolute -top-24 left-1/2 h-[480px] w-[920px] -translate-x-1/2 rounded-full bg-[#b8e6df]/35 blur-[120px]"
         />
         <div className="relative z-10 mx-auto flex max-w-[1280px] flex-col items-center px-4 text-center lg:px-8">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-[13px] font-semibold text-[#3d6b7a] shadow-sm">
+          <div className="planio-rise mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-[13px] font-semibold text-[#3d6b7a] shadow-sm">
             <BadgeCheck className="h-[18px] w-[18px] text-[#7eb8c8]" />
-            Güzellik işletmeleri için modern işletme paneli
+            Özel sağlık, diş klinikleri ve güzellik merkezleri için işletme paneli
           </div>
 
           <h1
-            className="mb-4 max-w-4xl text-4xl font-bold tracking-tight text-[#2f5563] sm:text-5xl lg:text-[56px] lg:leading-[68px]"
+            className="planio-rise planio-rise-delay-1 mb-4 max-w-4xl text-4xl font-bold tracking-tight text-[#2f5563] sm:text-5xl lg:text-[56px] lg:leading-[68px]"
             style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
           >
             İşletmenizi{" "}
@@ -96,12 +121,12 @@ export function LandingPage() {
             yönetin
           </h1>
 
-          <p className="mb-10 max-w-3xl text-lg leading-7 text-[#5a7380]">
-            Akıllı randevu, müşteri kartı, personel, satış, kasa ve resmi belge
-            süreçlerini Planio ile tek bulut panelinde birleştirin.
+          <p className="planio-rise planio-rise-delay-2 mb-10 max-w-3xl text-lg leading-7 text-[#5a7380]">
+            Randevu, hasta / müşteri kartı, personel, satış ve kasa süreçlerini
+            Planio ile tek bulut panelinde birleştirin.
           </p>
 
-          <div className="mb-4 flex flex-wrap items-center justify-center gap-4">
+          <div className="planio-rise planio-rise-delay-3 mb-4 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/register"
               className="group relative inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:-translate-y-1 hover:bg-[#6aa9bb]"
@@ -119,7 +144,7 @@ export function LandingPage() {
             </button>
           </div>
 
-          <div className="mb-16 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] font-semibold text-[#5a7380]">
+          <div className="planio-rise planio-rise-delay-4 mb-14 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] font-semibold text-[#5a7380]">
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle className="h-4 w-4 text-[#7eb8c8]" /> Kredi kartı gerekmez
             </span>
@@ -132,20 +157,17 @@ export function LandingPage() {
           </div>
 
           {/* Dashboard mock */}
-          <div className="w-full max-w-[1180px] overflow-hidden rounded-2xl bg-white p-4 shadow-xl lg:p-6">
-            <div className="-mx-4 -mt-4 mb-4 flex flex-wrap items-center justify-between bg-[#eef6f8]/80 px-6 pb-4 pt-4 lg:-mx-6 lg:-mt-6">
+          <div className="planio-rise planio-rise-delay-5 w-full max-w-[1180px]">
+            <div className="planio-float overflow-hidden rounded-2xl bg-white p-4 shadow-xl lg:p-6">
+            <div className="-mx-4 -mt-4 mb-4 flex flex-wrap items-center bg-[#eef6f8]/80 px-6 pb-4 pt-4 lg:-mx-6 lg:-mt-6">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-[#ef4444]/80" />
                 <span className="h-3 w-3 rounded-full bg-[#f59e0b]/80" />
                 <span className="h-3 w-3 rounded-full bg-[#10b981]/80" />
                 <span className="ml-2 text-[13px] font-semibold text-[#5a7380]">
-                  Planio · Canlı işletme paneli
+                  Planio - işletme paneli
                 </span>
               </div>
-              <span className="inline-flex items-center gap-1 rounded bg-white px-2 py-0.5 text-[11px] font-bold text-[#3d6b7a]">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-[#7eb8c8]" />
-                Gerçek zamanlı
-              </span>
             </div>
 
             <div className="mb-6 grid grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-4">
@@ -237,8 +259,10 @@ export function LandingPage() {
                   ].map((row) => (
                     <div
                       key={row.time}
-                      className={`flex flex-wrap items-center justify-between gap-3 rounded-lg p-3 ${
-                        row.active ? "bg-[#b8e6df]/35" : "bg-white hover:bg-[#eef6f8]"
+                      className={`flex flex-wrap items-center justify-between gap-3 rounded-lg p-3 transition-colors ${
+                        row.active
+                          ? "planio-soft-pulse bg-[#b8e6df]/35"
+                          : "bg-white hover:bg-[#eef6f8]"
                       }`}
                     >
                       <div className="flex items-center gap-4">
@@ -312,39 +336,46 @@ export function LandingPage() {
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </div>
+      </section>
+
+      {/* Capability marquee */}
+      <section className="border-y border-[#d7e8ee]/80 bg-white py-5">
+        <Marquee items={CAPABILITY_MARQUEE} />
       </section>
 
       {/* Sectors bar */}
       <section className="w-full bg-[#eef6f8]/70 py-10">
         <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-          <p className="mb-6 text-center text-[13px] font-semibold uppercase tracking-wider text-[#5a7380]">
-            Estetik, güzellik ve bakım işletmeleri için tasarlandı
-          </p>
+          <Reveal>
+            <p className="mb-6 text-center text-[13px] font-semibold uppercase tracking-wider text-[#5a7380]">
+              Özel sağlık, diş ve güzellik klinikleri için uyarlandı
+            </p>
+          </Reveal>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[
+              { title: "Özel sağlık kliniği", sub: "Poliklinik &amp; seans", icon: BadgeCheck },
+              { title: "Diş kliniği", sub: "Randevu &amp; tedavi planı", icon: Calendar },
               { title: "Güzellik merkezi", sub: "Lazer, cilt, spa", icon: Sparkles },
-              { title: "Kuaför &amp; salon", sub: "Personel &amp; koltuk", icon: Users },
-              { title: "Estetik klinik", sub: "Seans &amp; paket", icon: BadgeCheck },
-              { title: "Bakım stüdyosu", sub: "Randevu &amp; kasa", icon: Calendar },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:-translate-y-0.5"
-              >
-                <item.icon className="h-7 w-7 shrink-0 text-[#7eb8c8]" />
-                <div className="text-left">
-                  <span
-                    className="block text-base font-semibold leading-tight text-[#1e3340]"
-                    dangerouslySetInnerHTML={{ __html: item.title }}
-                  />
-                  <span
-                    className="text-[13px] text-[#5a7380]"
-                    dangerouslySetInnerHTML={{ __html: item.sub }}
-                  />
+              { title: "Estetik klinik", sub: "Paket &amp; personel", icon: Users },
+            ].map((item, index) => (
+              <Reveal key={item.title} delay={index * 80}>
+                <div className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:-translate-y-0.5">
+                  <item.icon className="h-7 w-7 shrink-0 text-[#7eb8c8]" />
+                  <div className="text-left">
+                    <span
+                      className="block text-base font-semibold leading-tight text-[#1e3340]"
+                      dangerouslySetInnerHTML={{ __html: item.title }}
+                    />
+                    <span
+                      className="text-[13px] text-[#5a7380]"
+                      dangerouslySetInnerHTML={{ __html: item.sub }}
+                    />
+                  </div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -353,7 +384,7 @@ export function LandingPage() {
       {/* Modules */}
       <section id="moduller" className="scroll-mt-28 w-full bg-[#F7FBFC] py-24">
         <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-          <div className="mb-16 max-w-3xl">
+          <Reveal className="mb-16 max-w-3xl">
             <Pill>Entegre işletme ekosistemi</Pill>
             <h2
               className="mt-3 mb-3 text-3xl font-semibold tracking-tight text-[#2f5563] sm:text-4xl"
@@ -365,7 +396,7 @@ export function LandingPage() {
               Farklı araçlar arasında veri kaybetmeyin. Planio; randevu, satış,
               tahsilat ve ekip süreçlerini birbirine bağlar.
             </p>
-          </div>
+          </Reveal>
 
           <div id="ozellikler" className="scroll-mt-28 grid grid-cols-1 gap-6 md:grid-cols-2">
             {[
@@ -406,30 +437,29 @@ export function LandingPage() {
                 ],
               },
             ].map((mod, index) => (
-              <div
-                key={mod.title}
-                className="flex flex-col justify-between rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md"
-              >
-                <div>
-                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[#b8e6df]/40 text-[#3d6b7a]">
-                    <span className="text-sm font-bold">0{index + 1}</span>
+              <Reveal key={mod.title} delay={(index % 2) * 100}>
+                <div className="flex h-full flex-col justify-between rounded-2xl bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                  <div>
+                    <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[#b8e6df]/40 text-[#3d6b7a]">
+                      <span className="text-sm font-bold">0{index + 1}</span>
+                    </div>
+                    <h3
+                      className="mb-3 text-2xl font-semibold text-[#2f5563]"
+                      style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
+                      dangerouslySetInnerHTML={{ __html: mod.title }}
+                    />
+                    <p className="mb-6 text-[15px] leading-6 text-[#5a7380]">{mod.body}</p>
+                    <ul className="mb-6 space-y-2 text-[15px] text-[#1e3340]">
+                      {mod.points.map((point) => (
+                        <li key={point} className="flex items-center gap-2">
+                          <CheckCircle className="h-5 w-5 shrink-0 text-[#7eb8c8]" />
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <h3
-                    className="mb-3 text-2xl font-semibold text-[#2f5563]"
-                    style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
-                    dangerouslySetInnerHTML={{ __html: mod.title }}
-                  />
-                  <p className="mb-6 text-[15px] leading-6 text-[#5a7380]">{mod.body}</p>
-                  <ul className="mb-6 space-y-2 text-[15px] text-[#1e3340]">
-                    {mod.points.map((point) => (
-                      <li key={point} className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 shrink-0 text-[#7eb8c8]" />
-                        {point}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -438,69 +468,68 @@ export function LandingPage() {
       {/* Sector spotlight */}
       <section className="w-full bg-[#eef6f8]/50 py-24">
         <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-          <div className="mx-auto mb-16 max-w-3xl text-center">
+          <Reveal className="mx-auto mb-16 max-w-3xl text-center">
             <Pill>Sektörel uyum</Pill>
             <h2
               className="mt-3 mb-3 text-3xl font-semibold tracking-tight text-[#2f5563] sm:text-4xl"
               style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
             >
-              Güzellik operasyonuna göre şekillendi
+              Klinik ritmine göre şekillendi
             </h2>
             <p className="text-lg leading-7 text-[#5a7380]">
-              Standart bir ajanda değil; randevu, seans ve tahsilat ritmine uygun
+              Standart bir ajanda değil; randevu, seans ve tahsilat akışına uygun
               bir çalışma alanı.
             </p>
-          </div>
+          </Reveal>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {[
               {
-                img: SECTOR_IMAGES.beauty,
-                title: "Güzellik &amp; estetik",
-                body: "Seanslı işlemler, personel primleri ve müşteri sadakatini tek yerden yönetin.",
+                img: SECTOR_IMAGES.clinic,
+                title: "Özel sağlık klinikleri",
+                body: "Muayene ve seans takvimi, danışan kartı ve ekip yetkilerini tek panelde toplayın.",
               },
               {
                 img: SECTOR_IMAGES.dental,
-                title: "Salon &amp; stüdyo",
-                body: "Koltuk / kaynak planı, hizmet kataloğu ve günlük kasa kapanışını sadeleştirin.",
+                title: "Diş klinikleri",
+                body: "Ünite / kaynak planı, tedavi randevuları ve günlük kasa kapanışını sadeleştirin.",
               },
               {
-                img: SECTOR_IMAGES.clinic,
-                title: "Çok şubeli markalar",
-                body: "Rol bazlı erişim, abonelik ve denetim izleriyle büyüyen ekiplere hazır.",
+                img: SECTOR_IMAGES.beauty,
+                title: "Güzellik &amp; estetik",
+                body: "Seanslı işlemler, paket satışları ve personel primlerini net tutun.",
               },
-            ].map((card) => (
-              <div
-                key={card.title}
-                className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition hover:shadow-md"
-              >
-                <div className="relative h-48 w-full">
-                  <Image
-                    src={card.img}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="(max-width:1024px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col justify-between p-6">
-                  <div>
-                    <h3
-                      className="mb-2 text-xl font-semibold text-[#2f5563]"
-                      style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
-                      dangerouslySetInnerHTML={{ __html: card.title }}
+            ].map((card, index) => (
+              <Reveal key={card.title} delay={index * 100}>
+                <div className="group flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                  <div className="relative h-48 w-full overflow-hidden">
+                    <Image
+                      src={card.img}
+                      alt=""
+                      fill
+                      className="object-cover transition duration-700 group-hover:scale-105"
+                      sizes="(max-width:1024px) 100vw, 33vw"
                     />
-                    <p className="mb-4 text-[15px] leading-6 text-[#5a7380]">{card.body}</p>
                   </div>
-                  <Link
-                    href="/register"
-                    className="inline-flex items-center justify-between rounded-lg bg-[#eef6f8] px-4 py-2.5 text-[13px] font-semibold text-[#2f5563] hover:bg-[#e4f0f4]"
-                  >
-                    Çözümü inceleyin
-                    <ArrowRight className="h-[18px] w-[18px]" />
-                  </Link>
+                  <div className="flex flex-1 flex-col justify-between p-6">
+                    <div>
+                      <h3
+                        className="mb-2 text-xl font-semibold text-[#2f5563]"
+                        style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
+                        dangerouslySetInnerHTML={{ __html: card.title }}
+                      />
+                      <p className="mb-4 text-[15px] leading-6 text-[#5a7380]">{card.body}</p>
+                    </div>
+                    <Link
+                      href="/register"
+                      className="inline-flex items-center justify-between rounded-lg bg-[#eef6f8] px-4 py-2.5 text-[13px] font-semibold text-[#2f5563] hover:bg-[#e4f0f4]"
+                    >
+                      Çözümü inceleyin
+                      <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -508,8 +537,12 @@ export function LandingPage() {
 
       {/* ROI band */}
       <section className="relative w-full overflow-hidden bg-[#3d6b7a] py-24 text-white">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#b8e6df]/50 to-transparent"
+        />
         <div className="relative z-10 mx-auto max-w-[1280px] px-4 lg:px-8">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
+          <Reveal className="mx-auto mb-16 max-w-2xl text-center">
             <span className="mb-3 inline-block rounded-full bg-[#2f5563] px-3.5 py-1 text-[13px] font-semibold text-[#b8e6df]">
               Ölçülebilir sonuç
             </span>
@@ -519,7 +552,7 @@ export function LandingPage() {
             >
               Planio ile operasyonu sadeleştirin
             </h2>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-1 gap-6 text-center sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
@@ -542,29 +575,35 @@ export function LandingPage() {
                 title: "Güvenli erişim",
                 body: "Rol bazlı yetki ve denetim kaydı ile şeffaflık.",
               },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-2xl bg-[#2f5563]/50 p-8 backdrop-blur-sm"
-              >
-                <div
-                  className="mb-2 text-4xl font-bold leading-none text-[#b8e6df] sm:text-5xl"
-                  style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
-                >
-                  {item.stat}
+            ].map((item, index) => (
+              <Reveal key={item.title} delay={index * 90}>
+                <div className="rounded-2xl bg-[#2f5563]/50 p-8 backdrop-blur-sm transition hover:bg-[#2f5563]/70">
+                  <div
+                    className="mb-2 text-4xl font-bold leading-none text-[#b8e6df] sm:text-5xl"
+                    style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
+                  >
+                    {item.stat}
+                  </div>
+                  <div className="mb-2 text-xl font-semibold">{item.title}</div>
+                  <p className="text-[13px] leading-5 text-[#b8e6df]/90">{item.body}</p>
                 </div>
-                <div className="mb-2 text-xl font-semibold">{item.title}</div>
-                <p className="text-[13px] leading-5 text-[#b8e6df]/90">{item.body}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
+        </div>
+        <div className="relative z-10 mt-16 border-t border-white/10 pt-6">
+          <Marquee
+            items={TRUST_MARQUEE}
+            reverse
+            className="planio-marquee--on-dark"
+          />
         </div>
       </section>
 
       {/* Testimonials */}
       <section id="yorumlar" className="scroll-mt-28 w-full bg-[#F7FBFC] py-24">
         <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-          <div className="mb-16">
+          <Reveal className="mb-16">
             <Pill>Müşteri yorumları</Pill>
             <h2
               className="mt-3 text-3xl font-semibold tracking-tight text-[#2f5563] sm:text-4xl"
@@ -572,7 +611,7 @@ export function LandingPage() {
             >
               İşletmeler Planio’yu anlatıyor
             </h2>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {[
               {
@@ -593,26 +632,25 @@ export function LandingPage() {
                 name: "Melis Aydın",
                 role: "Çok şubeli güzellik grubu",
               },
-            ].map((t) => (
-              <div
-                key={t.name}
-                className="flex flex-col justify-between rounded-2xl bg-white p-8 shadow-sm"
-              >
-                <div>
-                  <div className="mb-4 flex gap-1 text-[#f59e0b]">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-current" />
-                    ))}
+            ].map((t, index) => (
+              <Reveal key={t.name} delay={index * 100}>
+                <div className="flex h-full flex-col justify-between rounded-2xl bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                  <div>
+                    <div className="mb-4 flex gap-1 text-[#f59e0b]">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className="h-5 w-5 fill-current" />
+                      ))}
+                    </div>
+                    <p className="mb-6 text-[15px] italic leading-6 text-[#1e3340]">
+                      “{t.quote}”
+                    </p>
                   </div>
-                  <p className="mb-6 text-[15px] italic leading-6 text-[#1e3340]">
-                    “{t.quote}”
-                  </p>
+                  <div>
+                    <div className="text-base font-bold text-[#2f5563]">{t.name}</div>
+                    <div className="text-[13px] text-[#5a7380]">{t.role}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-base font-bold text-[#2f5563]">{t.name}</div>
-                  <div className="text-[13px] text-[#5a7380]">{t.role}</div>
-                </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -621,7 +659,7 @@ export function LandingPage() {
       {/* Comparison */}
       <section className="w-full bg-[#eef6f8]/60 py-24">
         <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-          <div className="mx-auto mb-16 max-w-3xl text-center">
+          <Reveal className="mx-auto mb-16 max-w-3xl text-center">
             <Pill>Açık karşılaştırma</Pill>
             <h2
               className="mt-3 mb-3 text-3xl font-semibold tracking-tight text-[#2f5563] sm:text-4xl"
@@ -632,67 +670,69 @@ export function LandingPage() {
             <p className="text-lg leading-7 text-[#5a7380]">
               Kağıt defter ve parçalı araçlar yerine tek bulut paneli.
             </p>
-          </div>
-          <div className="overflow-hidden rounded-2xl bg-white shadow-md">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left">
-                <thead>
-                  <tr className="bg-[#e4f0f4]/80">
-                    <th className="w-1/3 p-6 text-base font-semibold text-[#1e3340]">
-                      Özellik
-                    </th>
-                    <th className="w-1/5 p-6 text-center text-base font-semibold text-[#5a7380]">
-                      Excel / defter
-                    </th>
-                    <th className="w-1/5 p-6 text-center text-base font-semibold text-[#5a7380]">
-                      Eski yazılımlar
-                    </th>
-                    <th className="w-1/4 bg-[#b8e6df]/40 p-6 text-center text-base font-bold text-[#2f5563]">
-                      Planio
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    ["Her yerden erişim", "Yok", "Sadece ofis PC", "Bulut · mobil hazır"],
-                    ["Randevu + finans bir arada", "Yok", "Parçalı", "Tek panel"],
-                    ["Rol bazlı yetki", "Yok", "Zayıf", "Owner / personel / muhasebe"],
-                    ["e-Belge &amp; POS hazırlığı", "Yok", "Ayrı yazılım", "Panel içinden"],
-                    ["Denetim kaydı", "Yok", "Sınırlı", "İşlem izi"],
-                  ].map((row, i) => (
-                    <tr
-                      key={row[0]}
-                      className={i % 2 ? "bg-[#eef6f8]/40" : undefined}
-                    >
-                      <td
-                        className="p-4 pl-6 text-[15px] font-semibold text-[#1e3340]"
-                        dangerouslySetInnerHTML={{ __html: row[0] }}
-                      />
-                      <td className="p-4 text-center text-[13px] font-semibold text-red-600">
-                        {row[1]}
-                      </td>
-                      <td className="p-4 text-center text-[13px] font-semibold text-red-600">
-                        {row[2]}
-                      </td>
-                      <td className="bg-[#b8e6df]/20 p-4 text-center text-[13px] font-semibold text-[#3d6b7a]">
-                        <span className="inline-flex items-center gap-1">
-                          <CheckCircle className="h-4 w-4" />
-                          {row[3]}
-                        </span>
-                      </td>
+          </Reveal>
+          <Reveal>
+            <div className="overflow-hidden rounded-2xl bg-white shadow-md">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left">
+                  <thead>
+                    <tr className="bg-[#e4f0f4]/80">
+                      <th className="w-1/3 p-6 text-base font-semibold text-[#1e3340]">
+                        Özellik
+                      </th>
+                      <th className="w-1/5 p-6 text-center text-base font-semibold text-[#5a7380]">
+                        Excel / defter
+                      </th>
+                      <th className="w-1/5 p-6 text-center text-base font-semibold text-[#5a7380]">
+                        Eski yazılımlar
+                      </th>
+                      <th className="w-1/4 bg-[#b8e6df]/40 p-6 text-center text-base font-bold text-[#2f5563]">
+                        Planio
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["Her yerden erişim", "Yok", "Sadece ofis PC", "Bulut · mobil hazır"],
+                      ["Randevu + finans bir arada", "Yok", "Parçalı", "Tek panel"],
+                      ["Rol bazlı yetki", "Yok", "Zayıf", "Owner / personel / muhasebe"],
+                      ["e-Belge &amp; POS hazırlığı", "Yok", "Ayrı yazılım", "Panel içinden"],
+                      ["Denetim kaydı", "Yok", "Sınırlı", "İşlem izi"],
+                    ].map((row, i) => (
+                      <tr
+                        key={row[0]}
+                        className={i % 2 ? "bg-[#eef6f8]/40" : undefined}
+                      >
+                        <td
+                          className="p-4 pl-6 text-[15px] font-semibold text-[#1e3340]"
+                          dangerouslySetInnerHTML={{ __html: row[0] }}
+                        />
+                        <td className="p-4 text-center text-[13px] font-semibold text-red-600">
+                          {row[1]}
+                        </td>
+                        <td className="p-4 text-center text-[13px] font-semibold text-red-600">
+                          {row[2]}
+                        </td>
+                        <td className="bg-[#b8e6df]/20 p-4 text-center text-[13px] font-semibold text-[#3d6b7a]">
+                          <span className="inline-flex items-center gap-1">
+                            <CheckCircle className="h-4 w-4" />
+                            {row[3]}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* FAQ */}
       <section id="sss" className="scroll-mt-28 w-full bg-[#F7FBFC] py-24">
         <div className="mx-auto max-w-[880px] px-4 lg:px-8">
-          <div className="mb-16 text-center">
+          <Reveal className="mb-16 text-center">
             <Pill>Aklınıza takılanlar</Pill>
             <h2
               className="mt-3 mb-3 text-3xl font-semibold tracking-tight text-[#2f5563] sm:text-4xl"
@@ -700,7 +740,7 @@ export function LandingPage() {
             >
               Sıkça sorulan sorular
             </h2>
-          </div>
+          </Reveal>
           <div className="space-y-4">
             {[
               {
@@ -720,13 +760,14 @@ export function LandingPage() {
                 a: "Hayır. Şeffaf abonelik modeli vardır; hesabınızı oluşturup planınızı panelden yönetirsiniz.",
               },
             ].map((item, index) => (
-              <FaqItem
-                key={item.q}
-                question={item.q}
-                answer={item.a}
-                open={faqOpen === index}
-                onToggle={() => setFaqOpen(faqOpen === index ? null : index)}
-              />
+              <Reveal key={item.q} delay={index * 60}>
+                <FaqItem
+                  question={item.q}
+                  answer={item.a}
+                  open={faqOpen === index}
+                  onToggle={() => setFaqOpen(faqOpen === index ? null : index)}
+                />
+              </Reveal>
             ))}
           </div>
         </div>
@@ -735,49 +776,51 @@ export function LandingPage() {
       {/* Final CTA */}
       <section className="w-full bg-[#eef6f8] py-24">
         <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-[#3d6b7a] p-10 text-center text-white shadow-xl lg:p-24">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-[#7eb8c8]/30 blur-3xl"
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-[#b8e6df]/20 blur-3xl"
-            />
-            <div className="relative z-10 mx-auto max-w-3xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#2f5563] px-3.5 py-1.5 text-[13px] font-semibold text-[#b8e6df]">
-                Hemen bugün başlayın
-              </div>
-              <h2
-                className="mb-4 text-3xl font-bold tracking-tight sm:text-5xl"
-                style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
-              >
-                İşletmenizin dijital panelini bugün açın
-              </h2>
-              <p className="mx-auto mb-10 max-w-2xl text-lg leading-7 text-[#b8e6df]">
-                Hesabınızı oluşturun, randevu ve tahsilatı tek yerden yönetmeye
-                başlayın.
-              </p>
-              <div className="mb-6 flex flex-wrap items-center justify-center gap-4">
-                <Link
-                  href="/register"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#b8e6df] hover:text-[#2f5563]"
+          <Reveal>
+            <div className="relative overflow-hidden rounded-3xl bg-[#3d6b7a] p-10 text-center text-white shadow-xl lg:p-24">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-[#7eb8c8]/30 blur-3xl"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-[#b8e6df]/20 blur-3xl"
+              />
+              <div className="relative z-10 mx-auto max-w-3xl">
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#2f5563] px-3.5 py-1.5 text-[13px] font-semibold text-[#b8e6df]">
+                  Hemen bugün başlayın
+                </div>
+                <h2
+                  className="mb-4 text-3xl font-bold tracking-tight sm:text-5xl"
+                  style={{ fontFamily: "var(--font-planio-display), sans-serif" }}
                 >
-                  Ücretsiz hesap oluştur
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-                <Link
-                  href="/iletisim"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-8 py-4 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
-                >
-                  İletişime geçin
-                </Link>
+                  İşletmenizin dijital panelini bugün açın
+                </h2>
+                <p className="mx-auto mb-10 max-w-2xl text-lg leading-7 text-[#b8e6df]">
+                  Hesabınızı oluşturun, randevu ve tahsilatı tek yerden yönetmeye
+                  başlayın.
+                </p>
+                <div className="mb-6 flex flex-wrap items-center justify-center gap-4">
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#b8e6df] hover:text-[#2f5563]"
+                  >
+                    Ücretsiz hesap oluştur
+                    <ArrowRight className="h-5 w-5" />
+                  </Link>
+                  <Link
+                    href="/iletisim"
+                    className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-8 py-4 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+                  >
+                    İletişime geçin
+                  </Link>
+                </div>
+                <p className="text-[11px] font-bold tracking-wide text-[#b8e6df]/90">
+                  Taahhüt yok · Destek için destek@planio.app
+                </p>
               </div>
-              <p className="text-[11px] font-bold tracking-wide text-[#b8e6df]/90">
-                Taahhüt yok · Destek için destek@planio.app
-              </p>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 

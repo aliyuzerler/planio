@@ -215,7 +215,7 @@ export class CashAccountsService {
       });
       if (!account) {
         throw new BadRequestException({
-          message: "Cash account does not belong to this business.",
+          message: "Kasa hesabı bu işletmeye ait değil.",
           code: "INVALID_CASH_ACCOUNT",
         });
       }
@@ -289,7 +289,7 @@ export class CashAccountsService {
       error.code === "P2002"
     ) {
       throw new ConflictException({
-        message: "A cash account with this name already exists.",
+        message: "Bu isimde bir kasa hesabı zaten var.",
         code: "CASH_ACCOUNT_NAME_CONFLICT",
       });
     }

@@ -5,6 +5,7 @@ import type {
   CreateStaffInput,
   SpecializationProfile,
   StaffHoursSettings,
+  StaffLoginRole,
   StaffProfile,
   StaffSpecialization,
   UpdateSpecializationInput,
@@ -17,6 +18,7 @@ import { weeklyHoursSlotSchema } from "./notification";
 const personNameSchema = z.string().trim().min(1).max(100);
 const nullableEmailSchema = z.string().trim().email().max(320).nullable();
 const nullableNotesSchema = z.string().trim().max(5000).nullable();
+const staffLoginRoleSchema = z.enum(["STAFF", "ACCOUNTANT"]);
 
 export const staffSpecializationSchema: z.ZodType<StaffSpecialization> =
   z.object({
@@ -33,6 +35,7 @@ export const staffProfileSchema: z.ZodType<StaffProfile> = z.object({
   phone: z.string().nullable(),
   email: z.string().nullable(),
   notes: z.string().nullable(),
+  loginRole: staffLoginRoleSchema,
   isActive: z.boolean(),
   isSelf: z.boolean().optional(),
   specializations: z.array(staffSpecializationSchema),
@@ -56,6 +59,7 @@ export const createStaffInputSchema: z.ZodType<CreateStaffInput> = z
     phone: phoneSchema.nullable().optional(),
     email: nullableEmailSchema.optional(),
     notes: nullableNotesSchema.optional(),
+    loginRole: staffLoginRoleSchema,
     specializationIds: z
       .array(z.string().uuid())
       .max(50)
@@ -64,7 +68,26 @@ export const createStaffInputSchema: z.ZodType<CreateStaffInput> = z
       })
       .optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((input, ctx) => {
+    if (input.loginRole === "ACCOUNTANT" && !input.email) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Accountant invites require an email address.",
+        path: ["email"],
+      });
+    }
+    if (
+      input.loginRole === "ACCOUNTANT" &&
+      (input.specializationIds?.length ?? 0) > 0
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Accountants cannot be assigned specializations.",
+        path: ["specializationIds"],
+      });
+    }
+  });
 
 export const updateStaffInputSchema: z.ZodType<UpdateStaffInput> = z
   .object({
@@ -107,3 +130,5 @@ export const staffHoursSettingsSchema: z.ZodType<StaffHoursSettings> = z.object(
 
 export const updateStaffHoursInputSchema: z.ZodType<UpdateStaffHoursInput> =
   staffHoursSettingsSchema;
+
+export type { StaffLoginRole };

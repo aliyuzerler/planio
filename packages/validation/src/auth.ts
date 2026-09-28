@@ -4,6 +4,7 @@ import type {
   AuthTokenResponse,
   AuthUser,
   CurrentUserResponse,
+  RegisterPendingResponse,
 } from "@xenior/types";
 import { BUSINESS_USER_ROLES } from "@xenior/types";
 
@@ -77,6 +78,12 @@ export const authTokenResponseSchema: z.ZodType<AuthTokenResponse> =
 export const authSessionResponseSchema: z.ZodType<AuthSessionResponse> =
   authTokenResponseObjectSchema.extend({
     user: authUserSchema,
+  });
+
+export const registerPendingResponseSchema: z.ZodType<RegisterPendingResponse> =
+  z.object({
+    email: z.string().email(),
+    requiresEmailVerification: z.literal(true),
   });
 
 export const currentUserResponseSchema: z.ZodType<CurrentUserResponse> =

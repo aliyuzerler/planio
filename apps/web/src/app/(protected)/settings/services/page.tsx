@@ -2,22 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@xenior/ui";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
-import { PageHeader } from "@/components/ui/page-header";
 import { QueryState } from "@/components/ui/query-state";
-import {
-  DataTable,
-  DataTableBody,
-  DataTableCell,
-  DataTableHead,
-  DataTableHeaderCell,
-  DataTableRow,
-} from "@/components/ui/data-table";
 import {
   useCanManageServices,
   useServiceList,
 } from "@/lib/services/service-queries";
+
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+const controlClass =
+  "rounded-xl bg-white px-3 py-2.5 text-sm text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none transition focus:ring-2 focus:ring-[#7eb8c8]";
 
 export default function ServicesPage() {
   const [q, setQ] = useState("");
@@ -29,81 +24,112 @@ export default function ServicesPage() {
   });
 
   return (
-    <PageFrame width="lg">
-      <PageHeader
-        title="Hizmetler"
-        description="İşletmenize özel hizmetleri ve fiyatlarını yönetin."
-        actions={
-          canManage ? (
-            <Button asChild>
-              <Link href="/settings/services/new">Yeni hizmet</Link>
-            </Button>
-          ) : null
-        }
+    <PageFrame width="lg" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
       />
-      <div className="mt-6 flex gap-3">
-        <input
-          aria-label="Hizmet ara"
-          value={q}
-          onChange={(event) => setQ(event.target.value)}
-          placeholder="Hizmet ara"
-          className="min-w-0 flex-1 rounded-md border border-zinc-300 px-3 py-2"
-        />
-        <select
-          aria-label="Durum filtresi"
-          value={active}
-          onChange={(event) => setActive(event.target.value as typeof active)}
-          className="rounded-md border border-zinc-300 px-3 py-2"
-        >
-          <option value="all">Tümü</option>
-          <option value="true">Aktif</option>
-          <option value="false">Pasif</option>
-        </select>
+
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Katalog
+          </p>
+          <h1
+            className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+            style={displayFont}
+          >
+            Hizmetler
+          </h1>
+          <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[#5a7380]">
+            İşletmenize özel hizmetleri, süreleri ve fiyatları yönetin.
+          </p>
+        </div>
+        {canManage ? (
+          <Link
+            href="/settings/services/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]"
+          >
+            <Sparkles className="h-4 w-4" />
+            Yeni hizmet
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        ) : null}
       </div>
-      <QueryState
-        isLoading={services.isLoading}
-        isError={services.isError}
-        isEmpty={services.data?.length === 0}
-        loading="Hizmetler yükleniyor…"
-        error="Hizmetler yüklenemedi."
-        empty="Henüz hizmet eklenmemiş."
-      >
-        {services.data ? (
-          <DataTable caption="Hizmet listesi">
-            <DataTableHead>
-              <DataTableRow>
-                <DataTableHeaderCell>Hizmet</DataTableHeaderCell>
-                <DataTableHeaderCell>Süre</DataTableHeaderCell>
-                <DataTableHeaderCell>Fiyat</DataTableHeaderCell>
-                <DataTableHeaderCell>Durum</DataTableHeaderCell>
-              </DataTableRow>
-            </DataTableHead>
-            <DataTableBody>
-              {services.data.map((service) => (
-                <DataTableRow key={service.id}>
-                  <DataTableCell>
+
+      <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="flex flex-wrap gap-3 border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-4 py-3 sm:px-5">
+          <input
+            aria-label="Hizmet ara"
+            value={q}
+            onChange={(event) => setQ(event.target.value)}
+            placeholder="Hizmet ara"
+            className={`min-w-0 flex-1 ${controlClass}`}
+          />
+          <select
+            aria-label="Durum filtresi"
+            value={active}
+            onChange={(event) => setActive(event.target.value as typeof active)}
+            className={controlClass}
+          >
+            <option value="all">Tümü</option>
+            <option value="true">Aktif</option>
+            <option value="false">Pasif</option>
+          </select>
+        </div>
+
+        <div className="p-4 sm:p-5">
+          <QueryState
+            isLoading={services.isLoading}
+            isError={services.isError}
+            isEmpty={services.data?.length === 0}
+            loading="Hizmetler yükleniyor…"
+            error="Hizmetler yüklenemedi."
+            empty="Henüz hizmet eklenmemiş."
+          >
+            {services.data ? (
+              <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+                {services.data.map((service) => (
+                  <li key={service.id}>
                     <Link
                       href={`/settings/services/${service.id}`}
-                      className="font-medium underline"
+                      className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 transition hover:bg-[#eef6f8]"
                     >
-                      {service.name}
+                      <div className="min-w-0">
+                        <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                          {service.name}
+                        </p>
+                        <p className="mt-0.5 text-[13px] text-[#5a7380]">
+                          {service.durationMinutes} dk · {service.price}{" "}
+                          {service.currency}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <StatusBadge active={service.isActive} />
+                        <ArrowRight className="h-4 w-4 text-[#7eb8c8]" />
+                      </div>
                     </Link>
-                  </DataTableCell>
-                  <DataTableCell>{service.durationMinutes} dk</DataTableCell>
-                  <DataTableCell>
-                    {service.price} {service.currency}
-                  </DataTableCell>
-                  <DataTableCell>
-                    <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs">
-                      {service.isActive ? "Aktif" : "Pasif"}
-                    </span>
-                  </DataTableCell>
-                </DataTableRow>
-              ))}
-            </DataTableBody>
-          </DataTable>
-        ) : null}
-      </QueryState>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </QueryState>
+        </div>
+      </div>
     </PageFrame>
+  );
+}
+
+function StatusBadge({ active }: { active: boolean }) {
+  return (
+    <span
+      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+        active
+          ? "bg-[#b8e6df]/45 text-[#2f5563]"
+          : "bg-[#e4f0f4] text-[#5a7380]"
+      }`}
+    >
+      {active ? "Aktif" : "Pasif"}
+    </span>
   );
 }

@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    name: Lint, test, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: xenior
+          POSTGRES_PASSWORD: xenior-ci-password
+          POSTGRES_DB: xenior
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U xenior -d xenior"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://xenior:xenior-ci-password@localhost:5432/xenior
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-jwt-secret-at-least-32-chars
+      JWT_REFRESH_SECRET: ci-test-refresh-secret-at-least-32
+      JWT_ACCESS_TTL_SECONDS: "900"
+      JWT_REFRESH_TTL_SECONDS: "2592000"
+      API_URL: http://localhost:3001
+      WEB_URL: http://localhost:3000
+      ADMIN_URL: http://localhost:3002
+      API_PORT: "3001"
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm db:generate
+      - name: Apply migrations
+        run: pnpm db:migrate:deploy
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Install Playwright Chromium
+        run: pnpm --filter @xenior/web exec playwright install --with-deps chromium
+      - name: Unit tests
+        run: pnpm test
+      - name: API end-to-end tests
+        run: pnpm test:api:e2e
+      - name: Build
+        run: pnpm build

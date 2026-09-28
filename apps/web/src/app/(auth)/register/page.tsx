@@ -25,7 +25,7 @@ export default function RegisterPage() {
     const form = new FormData(event.currentTarget);
 
     try {
-      await register({
+      const result = await register({
         email: String(form.get("email") ?? ""),
         password: String(form.get("password") ?? ""),
         firstName: String(form.get("firstName") ?? ""),
@@ -35,6 +35,14 @@ export default function RegisterPage() {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         privacyAccepted: form.get("privacyAccepted") === "on",
       });
+
+      if ("requiresEmailVerification" in result && result.requiresEmailVerification) {
+        router.replace(
+          `/verify-email/pending?email=${encodeURIComponent(result.email)}`,
+        );
+        return;
+      }
+
       const session = await getSession();
       setSession(session.user, session.accessToken, session.memberships);
       router.replace("/dashboard");
@@ -69,8 +77,8 @@ export default function RegisterPage() {
             İşletme hesabı oluştur
           </h1>
           <p className="mt-2 text-[15px] leading-6 text-[#5a7380]">
-            İlk kullanıcı işletme sahibi olarak oluşturulur. Randevu ve tahsilatı
-            tek panelden yönetmeye hemen başlayabilirsiniz.
+            İlk kullanıcı işletme sahibi olarak oluşturulur. Hesabı açtıktan
+            sonra e-posta doğrulaması gerekir.
           </p>
         </div>
 

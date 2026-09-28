@@ -6,6 +6,7 @@ import {
   IsArray,
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -24,6 +25,11 @@ const trim = ({ value }: { value: unknown }): unknown =>
 
 const normalizeEmail = ({ value }: { value: unknown }): unknown =>
   typeof value === "string" ? value.trim().toLowerCase() : value;
+
+enum StaffLoginRoleDto {
+  STAFF = "STAFF",
+  ACCOUNTANT = "ACCOUNTANT",
+}
 
 class WeeklyHoursSlotDto {
   @ApiProperty({ minimum: 0, maximum: 6 })
@@ -84,6 +90,10 @@ export class CreateStaffDto {
   @IsString()
   @MaxLength(5000)
   notes?: string | null;
+
+  @ApiProperty({ enum: StaffLoginRoleDto })
+  @IsEnum(StaffLoginRoleDto)
+  loginRole!: StaffLoginRoleDto;
 
   @ApiPropertyOptional({ type: [String], maxItems: 50 })
   @IsOptional()
@@ -146,6 +156,11 @@ export class ListStaffQueryDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ enum: StaffLoginRoleDto })
+  @IsOptional()
+  @IsEnum(StaffLoginRoleDto)
+  loginRole?: StaffLoginRoleDto;
 
   @ApiPropertyOptional({ maxLength: 100 })
   @Transform(trim)

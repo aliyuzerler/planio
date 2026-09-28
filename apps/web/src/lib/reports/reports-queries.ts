@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import type { ListTenantAuditLogsQuery } from "@xenior/types";
 import { useAuthStore } from "@/stores/auth-store";
 import { getFinanceSummary, listTenantAuditLogs } from "./reports-api";
 
@@ -13,11 +14,25 @@ export function useFinanceSummary(date?: string) {
   });
 }
 
-export function useTenantAuditLogs() {
+export function useTenantAuditLogs(
+  filters: Omit<ListTenantAuditLogsQuery, "page" | "pageSize"> = {},
+) {
   const businessId = useAuthStore((state) => state.selectedBusinessId);
   return useQuery({
-    queryKey: ["audit-logs", businessId],
-    queryFn: () => listTenantAuditLogs({ pageSize: 50 }),
+    queryKey: [
+      "audit-logs",
+      businessId,
+      filters.from ?? null,
+      filters.to ?? null,
+      filters.action ?? null,
+    ],
+    queryFn: () =>
+      listTenantAuditLogs({
+        pageSize: 50,
+        from: filters.from || undefined,
+        to: filters.to || undefined,
+        action: filters.action || undefined,
+      }),
     enabled: Boolean(businessId),
   });
 }

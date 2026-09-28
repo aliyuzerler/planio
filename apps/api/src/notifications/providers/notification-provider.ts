@@ -7,6 +7,7 @@ export interface NotificationProviderMessage {
   destination: string | null;
   subject: string | null;
   body: string;
+  html?: string;
   payload?: unknown;
 }
 

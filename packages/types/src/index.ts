@@ -23,6 +23,7 @@ export type {
   PlatformRole,
   RefreshTokenInput,
   RegisterInput,
+  RegisterPendingResponse,
 } from "./auth";
 export { BUSINESS_USER_ROLES } from "./auth";
 export { TENANT_HEADER } from "./authorization";
@@ -69,12 +70,14 @@ export type {
   ListStaffQuery,
   SpecializationProfile,
   StaffHoursSettings,
+  StaffLoginRole,
   StaffProfile,
   StaffSpecialization,
   UpdateSpecializationInput,
   UpdateStaffHoursInput,
   UpdateStaffInput,
 } from "./staff";
+export { STAFF_LOGIN_ROLES } from "./staff";
 export type {
   CreateServiceInput,
   ListServicesQuery,

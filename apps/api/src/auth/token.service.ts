@@ -107,6 +107,14 @@ export class TokenService {
       });
     }
 
+    if (!existing.user.emailVerifiedAt) {
+      await this.revokeFamily(existing.familyId, "EMAIL_NOT_VERIFIED");
+      throw new UnauthorizedException({
+        message: "Email address must be verified before continuing.",
+        code: "EMAIL_NOT_VERIFIED",
+      });
+    }
+
     let nextRefreshToken: string;
     try {
       nextRefreshToken = await this.prisma.$transaction(async (transaction) => {

@@ -37,6 +37,7 @@ import { HttpExceptionFilter } from "../src/common/filters/http-exception.filter
 import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 
 const resourceTypes = new Set<TenantResourceType>([
   "customer",
@@ -223,29 +224,15 @@ describe("Multi-tenant authorization (e2e)", () => {
   });
 
   afterAll(async () => {
-    await prisma.appointment.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.customer.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.staff.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
-    await prisma.service.deleteMany({
-      where: { businessId: { in: [businessAId, businessBId] } },
-    });
     const users = await prisma.user.findMany({
       where: { email: { in: Object.values(emails) } },
       select: { id: true },
     });
-    const userIds = users.map((user) => user.id);
-    await prisma.refreshToken.deleteMany({ where: { userId: { in: userIds } } });
-    await prisma.businessUser.deleteMany({ where: { userId: { in: userIds } } });
-    await prisma.business.deleteMany({
-      where: { id: { in: [businessAId, businessBId] } },
-    });
-    await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+    await cleanupTenantFixtures(
+      prisma,
+      [businessAId, businessBId],
+      users.map((user) => user.id),
+    );
     await app.close();
   });
 

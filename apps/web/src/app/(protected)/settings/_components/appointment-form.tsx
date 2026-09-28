@@ -1,19 +1,23 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type {
   AppointmentPaymentPlan,
   AppointmentRecord,
   CreateAppointmentInput,
 } from "@xenior/types";
 import { createAppointmentInputSchema } from "@xenior/validation";
-import { Button } from "@xenior/ui";
 import { AppError } from "@/lib/api/errors";
 import { useCustomerList } from "@/lib/customers/customer-queries";
 import { useResourceList, useBusinessRole } from "@/lib/resources/resource-queries";
 import { usePriceQuote } from "@/lib/campaigns/campaign-queries";
 import { useServiceList } from "@/lib/services/service-queries";
 import { useStaffList } from "@/lib/staff/staff-queries";
+
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+
+const fieldClass =
+  "rounded-xl border-0 bg-[#F7FBFC] px-3 py-2.5 text-[15px] text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none transition focus:ring-2 focus:ring-[#7eb8c8]";
 
 export function AppointmentForm({
   initial,
@@ -29,7 +33,7 @@ export function AppointmentForm({
   onSubmit: (input: CreateAppointmentInput) => Promise<void>;
 }) {
   const role = useBusinessRole();
-  const staff = useStaffList({ isActive: true });
+  const staff = useStaffList({ isActive: true, loginRole: "STAFF" });
   const services = useServiceList({ isActive: true });
   const customers = useCustomerList({ isActive: true, pageSize: 100 });
   const resources = useResourceList({ isActive: true });
@@ -106,155 +110,222 @@ export function AppointmentForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="grid gap-4 rounded-xl border border-zinc-200 p-6 sm:grid-cols-2"
-    >
-      <label className="flex flex-col gap-1 text-sm">
-        Müşteri
-        <select
-          required
-          aria-label="Müşteri"
-          value={customerId}
-          onChange={(event) => setCustomerId(event.target.value)}
-          className="rounded-md border border-zinc-300 px-3 py-2"
-        >
-          <option value="">Müşteri seçin</option>
-          {(customers.data?.items ?? []).map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.firstName} {item.lastName}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        Personel
-        <select
-          required
-          aria-label="Personel"
-          value={lockedStaffId ?? staffId}
-          disabled={Boolean(lockedStaffId)}
-          onChange={(event) => setStaffId(event.target.value)}
-          className="rounded-md border border-zinc-300 px-3 py-2"
-        >
-          <option value="">Personel seçin</option>
-          {(staff.data ?? []).map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.firstName} {item.lastName}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        Hizmet
-        <select
-          required
-          aria-label="Hizmet"
-          value={serviceId}
-          onChange={(event) => setServiceId(event.target.value)}
-          className="rounded-md border border-zinc-300 px-3 py-2"
-        >
-          <option value="">Hizmet seçin</option>
-          {(services.data ?? []).map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name} ({item.durationMinutes} dk)
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        Kaynak (isteğe bağlı)
-        <select
-          aria-label="Kaynak"
-          value={resourceId}
-          onChange={(event) => setResourceId(event.target.value)}
-          className="rounded-md border border-zinc-300 px-3 py-2"
-        >
-          <option value="">Kaynak yok</option>
-          {(resources.data ?? []).map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        Başlangıç
-        <input
-          required
-          aria-label="Başlangıç"
-          type="datetime-local"
-          value={startLocal}
-          onChange={(event) => setStartLocal(event.target.value)}
-          className="rounded-md border border-zinc-300 px-3 py-2"
-        />
-      </label>
-      <p className="text-sm text-zinc-600 sm:col-span-2">
-        Bitiş saati hizmet süresinden hesaplanır
-        {selectedService ? ` (${selectedService.durationMinutes} dakika).` : "."}
-      </p>
-      {quote.data ? (
-        <p className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-950 sm:col-span-2">
-          {quote.data.campaignId
-            ? `Kampanya: ${quote.data.campaignName} · Liste ${quote.data.listPrice} ${quote.data.currency} · İndirim ${quote.data.discountAmount} · Ödenecek ${quote.data.payableAmount} ${quote.data.currency}`
-            : `Ücret: ${quote.data.payableAmount} ${quote.data.currency}`}
-        </p>
-      ) : null}
-      {isCreate ? (
-        <fieldset className="grid gap-2 rounded-md border border-zinc-200 p-3 sm:col-span-2">
-          <legend className="px-1 text-sm font-medium">Ödeme planı</legend>
-          {(
-            [
-              ["ON_DAY", "Gününde"],
-              ["DEPOSIT", "Kapora"],
-              ["FULL", "Tamamı peşin"],
-            ] as const
-          ).map(([value, label]) => (
-            <label key={value} className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="paymentPlan"
-                value={value}
-                checked={paymentPlan === value}
-                onChange={() => setPaymentPlan(value)}
-              />
-              {label}
-            </label>
-          ))}
-          {paymentPlan === "DEPOSIT" ? (
-            <label className="mt-2 flex flex-col gap-1 text-sm">
-              Kapora tutarı
-              <input
-                required
-                aria-label="Kapora tutarı"
-                value={depositAmount}
-                placeholder={quote.data?.payableAmount ?? "150.00"}
-                onChange={(event) => setDepositAmount(event.target.value)}
-                className="rounded-md border border-zinc-300 px-3 py-2"
-              />
-            </label>
+    <form onSubmit={handleSubmit} className="grid gap-5">
+      <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+          <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+            Randevu bilgileri
+          </h2>
+          <p className="mt-0.5 text-[13px] text-[#5a7380]">
+            Müşteri, personel, hizmet ve başlangıç saati
+          </p>
+        </div>
+        <div className="grid gap-4 p-5 sm:grid-cols-2">
+          <Field label="Müşteri">
+            <select
+              required
+              aria-label="Müşteri"
+              value={customerId}
+              onChange={(event) => setCustomerId(event.target.value)}
+              className={fieldClass}
+            >
+              <option value="">Müşteri seçin</option>
+              {(customers.data?.items ?? []).map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.firstName} {item.lastName}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Personel">
+            <select
+              required
+              aria-label="Personel"
+              value={lockedStaffId ?? staffId}
+              disabled={Boolean(lockedStaffId)}
+              onChange={(event) => setStaffId(event.target.value)}
+              className={`${fieldClass} disabled:opacity-60`}
+            >
+              <option value="">Personel seçin</option>
+              {(staff.data ?? []).map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.firstName} {item.lastName}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Hizmet">
+            <select
+              required
+              aria-label="Hizmet"
+              value={serviceId}
+              onChange={(event) => setServiceId(event.target.value)}
+              className={fieldClass}
+            >
+              <option value="">Hizmet seçin</option>
+              {(services.data ?? []).map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name} ({item.durationMinutes} dk)
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Kaynak (isteğe bağlı)">
+            <select
+              aria-label="Kaynak"
+              value={resourceId}
+              onChange={(event) => setResourceId(event.target.value)}
+              className={fieldClass}
+            >
+              <option value="">Kaynak yok</option>
+              {(resources.data ?? []).map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Başlangıç">
+            <input
+              required
+              aria-label="Başlangıç"
+              type="datetime-local"
+              value={startLocal}
+              onChange={(event) => setStartLocal(event.target.value)}
+              className={fieldClass}
+            />
+          </Field>
+          <div className="flex items-end">
+            <p className="rounded-xl bg-[#eef6f8] px-3 py-2.5 text-[13px] leading-5 text-[#5a7380]">
+              Bitiş saati hizmet süresinden hesaplanır
+              {selectedService
+                ? ` (${selectedService.durationMinutes} dakika).`
+                : "."}
+            </p>
+          </div>
+          {quote.data ? (
+            <div className="rounded-xl bg-[#b8e6df]/35 px-4 py-3 text-[13px] leading-5 text-[#2f5563] sm:col-span-2">
+              {quote.data.campaignId
+                ? `Kampanya: ${quote.data.campaignName} · Liste ${quote.data.listPrice} ${quote.data.currency} · İndirim ${quote.data.discountAmount} · Ödenecek ${quote.data.payableAmount} ${quote.data.currency}`
+                : `Ücret: ${quote.data.payableAmount} ${quote.data.currency}`}
+            </div>
           ) : null}
-        </fieldset>
+        </div>
+      </section>
+
+      {isCreate ? (
+        <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+          <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+            <h2
+              className="text-lg font-semibold text-[#2f5563]"
+              style={displayFont}
+            >
+              Ödeme planı
+            </h2>
+            <p className="mt-0.5 text-[13px] text-[#5a7380]">
+              Randevu oluşturulurken tahsilat beklentisini belirleyin
+            </p>
+          </div>
+          <div className="grid gap-3 p-5 sm:grid-cols-3">
+            {(
+              [
+                ["ON_DAY", "Gününde", "İşlem günü tahsilat"],
+                ["DEPOSIT", "Kapora", "Ön ödeme alınır"],
+                ["FULL", "Peşin", "Tamamı peşin"],
+              ] as const
+            ).map(([value, label, hint]) => {
+              const active = paymentPlan === value;
+              return (
+                <label
+                  key={value}
+                  className={`cursor-pointer rounded-xl px-4 py-3 ring-1 transition ${
+                    active
+                      ? "bg-[#eef6f8] ring-[#7eb8c8]"
+                      : "bg-white ring-[#c5dde6]/70 hover:bg-[#F7FBFC]"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentPlan"
+                    value={value}
+                    checked={active}
+                    onChange={() => setPaymentPlan(value)}
+                    className="sr-only"
+                  />
+                  <span className="block text-[15px] font-semibold text-[#2f5563]">
+                    {label}
+                  </span>
+                  <span className="mt-0.5 block text-[12px] text-[#5a7380]">
+                    {hint}
+                  </span>
+                </label>
+              );
+            })}
+            {paymentPlan === "DEPOSIT" ? (
+              <Field label="Kapora tutarı" className="sm:col-span-3">
+                <input
+                  required
+                  aria-label="Kapora tutarı"
+                  value={depositAmount}
+                  placeholder={quote.data?.payableAmount ?? "150.00"}
+                  onChange={(event) => setDepositAmount(event.target.value)}
+                  className={fieldClass}
+                />
+              </Field>
+            ) : null}
+          </div>
+        </section>
       ) : null}
-      <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-        Notlar
-        <textarea
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          rows={3}
-          maxLength={5000}
-          className="rounded-md border border-zinc-300 px-3 py-2"
-        />
-      </label>
+
+      <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+          <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+            Notlar
+          </h2>
+        </div>
+        <div className="p-5">
+          <textarea
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            rows={3}
+            maxLength={5000}
+            className={`${fieldClass} w-full resize-y`}
+            placeholder="Opsiyonel notlar…"
+          />
+        </div>
+      </section>
+
       {error ? (
-        <p role="alert" className="text-sm text-red-700 sm:col-span-2">
+        <p role="alert" className="text-sm font-medium text-red-700">
           {error}
         </p>
       ) : null}
-      <Button type="submit" disabled={submitting} className="sm:col-span-2">
+
+      <button
+        type="submit"
+        disabled={submitting}
+        className="inline-flex items-center justify-center rounded-xl bg-[#7eb8c8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60"
+      >
         {submitting ? "Kaydediliyor…" : submitLabel}
-      </Button>
+      </button>
     </form>
+  );
+}
+
+function Field({
+  label,
+  children,
+  className = "",
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={`flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380] ${className}`}>
+      {label}
+      {children}
+    </label>
   );
 }
 

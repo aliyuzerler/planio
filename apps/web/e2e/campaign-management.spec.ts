@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "71111111-1111-4111-8111-111111111111";
 const campaignId = "72222222-2222-4222-8222-222222222222";
@@ -55,7 +56,7 @@ const campaign = {
   updatedAt: now,
 };
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -65,6 +66,7 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  await mockSubscriptionAccess(page);
 });
 
 test("owner creates a campaign and sees the discounted quote", async ({
@@ -114,14 +116,22 @@ test("owner creates a campaign and sees the discounted quote", async ({
   await page.getByRole("link", { name: "Yeni kampanya" }).click();
   await page.getByLabel("Kampanya adı").fill("Yaz kesim");
   await page.getByLabel("İndirim türü").selectOption("PERCENT");
-  await page.getByLabel("İndirim değeri").fill("20");
+  await page.getByLabel("İndirim değeri").fill("20.00");
   await page.getByLabel("Kampanya başlangıç").fill("2033-06-01T00:00");
   await page.getByLabel("Kampanya bitiş").fill("2033-08-31T23:59");
   await page.getByRole("checkbox", { name: /Saç Kesimi/ }).check();
   await page.getByLabel("SMS şablonu").fill("Yaz kampanyası başladı.");
+  const createdResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().includes("/api/v1/campaigns"),
+  );
   await page.getByRole("button", { name: "Kampanya oluştur" }).click();
-
-  await expect(page).toHaveURL(new RegExp(`/settings/campaigns/${campaignId}$`));
+  const response = await createdResponse;
+  expect(response.status()).toBe(201);
+  await expect(page).toHaveURL(new RegExp(`/settings/campaigns/${campaignId}$`), {
+    timeout: 15_000,
+  });
   expect(body).toMatchObject({
     name: "Yaz kesim",
     discountType: "PERCENT",

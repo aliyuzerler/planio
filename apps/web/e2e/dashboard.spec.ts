@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "a1111111-1111-4111-8111-111111111111";
 const now = "2026-09-05T00:00:00.000Z";
@@ -43,6 +44,7 @@ const appointment = {
   customer: { id: "a4444444-4444-4444-8444-444444444444", firstName: "Ada", lastName: "Lovelace" },
   staff: { id: "a5555555-5555-4555-8555-555555555555", firstName: "Stylist", lastName: "One" },
   service: { id: "a6666666-6666-4666-8666-666666666666", name: "Hair Cut" },
+  resource: null,
   startAt: "2033-01-15T10:00:00.000Z",
   endAt: "2033-01-15T11:00:00.000Z",
   status: "CONFIRMED",
@@ -56,11 +58,17 @@ const appointment = {
   campaignId: null,
   campaignNameSnapshot: null,
   currency: "TRY",
+  paymentPlan: "ON_DAY",
+  depositAmount: null,
+  paymentStatus: "UNPAID",
+  collectedAmount: "0.00",
+  remainingAmount: "250.00",
+  saleId: null,
   createdAt: now,
   updatedAt: now,
 };
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -70,6 +78,7 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  await mockSubscriptionAccess(page);
 });
 
 test("dashboard shows operational counts from existing list APIs", async ({
@@ -121,6 +130,7 @@ test("dashboard shows operational counts from existing list APIs", async ({
           phone: null,
           email: null,
           notes: null,
+          loginRole: "STAFF",
           isActive: true,
           specializations: [],
           createdAt: now,
@@ -133,6 +143,7 @@ test("dashboard shows operational counts from existing list APIs", async ({
           phone: null,
           email: null,
           notes: null,
+          loginRole: "STAFF",
           isActive: true,
           specializations: [],
           createdAt: now,
@@ -153,22 +164,22 @@ test("dashboard shows operational counts from existing list APIs", async ({
   await expect(summary.getByText("Müşteri sayısı")).toBeVisible();
   await expect(summary.getByText("Personel sayısı")).toBeVisible();
   await expect(
-    summary.getByRole("article").filter({ hasText: "Bugünkü randevular" }),
+    summary.getByRole("link").filter({ hasText: "Bugünkü randevular" }),
   ).toContainText("3");
   await expect(
-    summary.getByRole("article").filter({ hasText: "Yaklaşan randevular" }),
+    summary.getByRole("link").filter({ hasText: "Yaklaşan randevular" }),
   ).toContainText("2");
   await expect(
-    summary.getByRole("article").filter({ hasText: "Tamamlanan randevular" }),
+    summary.getByRole("link").filter({ hasText: "Tamamlanan randevular" }),
   ).toContainText("4");
   await expect(
-    summary.getByRole("article").filter({ hasText: "İptal edilen randevular" }),
+    summary.getByRole("link").filter({ hasText: "İptal edilen randevular" }),
   ).toContainText("1");
   await expect(
-    summary.getByRole("article").filter({ hasText: "Müşteri sayısı" }),
+    summary.getByRole("link").filter({ hasText: "Müşteri sayısı" }),
   ).toContainText("12");
   await expect(
-    summary.getByRole("article").filter({ hasText: "Personel sayısı" }),
+    summary.getByRole("link").filter({ hasText: "Personel sayısı" }),
   ).toContainText("2");
   await expect(page.getByRole("heading", { name: "Yaklaşan randevular" })).toBeVisible();
   await expect(page.getByText("Ada Lovelace").first()).toBeVisible();

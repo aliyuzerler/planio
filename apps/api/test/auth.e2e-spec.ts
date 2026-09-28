@@ -11,6 +11,7 @@ import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { HttpExceptionFilter } from "../src/common/filters/http-exception.filter";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 
 describe("Authentication (e2e)", () => {
   let app: INestApplication<App>;
@@ -59,14 +60,11 @@ describe("Authentication (e2e)", () => {
       include: { businessUsers: true },
     });
     if (user) {
-      await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
-      await prisma.businessUser.deleteMany({ where: { userId: user.id } });
-      await prisma.business.deleteMany({
-        where: {
-          id: { in: user.businessUsers.map((item) => item.businessId) },
-        },
-      });
-      await prisma.user.delete({ where: { id: user.id } });
+      await cleanupTenantFixtures(
+        prisma,
+        user.businessUsers.map((item) => item.businessId),
+        [user.id],
+      );
     }
     await app.close();
   });
@@ -133,6 +131,25 @@ describe("Authentication (e2e)", () => {
 
     expect(response.body.user.email).toBe(email);
     expect(response.body.accessToken).toEqual(expect.any(String));
+  });
+
+  it("rejects login when email is not verified", async () => {
+    await prisma.user.update({
+      where: { email },
+      data: { emailVerifiedAt: null },
+    });
+
+    const response = await request(app.getHttpServer())
+      .post("/api/v1/auth/login")
+      .send({ email, password })
+      .expect(401);
+
+    expect(response.body.code).toBe("EMAIL_NOT_VERIFIED");
+
+    await prisma.user.update({
+      where: { email },
+      data: { emailVerifiedAt: new Date() },
+    });
   });
 
   it("rotates refresh tokens and rejects the replaced token", async () => {

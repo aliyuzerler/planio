@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type {
   PlanRecord,
@@ -8,10 +9,8 @@ import type {
   SubscriptionRecord,
   SubscriptionStatus,
 } from "@xenior/types";
-import { Button } from "@xenior/ui";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageFrame } from "@/components/ui/page-frame";
-import { PageHeader } from "@/components/ui/page-header";
 import { useToast } from "@/components/ui/toast";
 import { AppError } from "@/lib/api/errors";
 import { useCreatePaymentCheckout, usePayments } from "@/lib/payments/payment-queries";
@@ -23,6 +22,14 @@ import {
   useSubscriptionAccess,
 } from "@/lib/subscriptions/subscription-queries";
 import { useAuthStore } from "@/stores/auth-store";
+
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+const fieldClass =
+  "rounded-xl border-0 bg-[#F7FBFC] px-3 py-2.5 text-[15px] text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none transition focus:ring-2 focus:ring-[#7eb8c8]";
+const btnPrimary =
+  "inline-flex items-center justify-center rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60";
+const btnOutline =
+  "inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#2f5563] ring-1 ring-[#c5dde6] transition hover:bg-[#eef6f8] disabled:opacity-60";
 
 const STATUS_LABELS: Record<SubscriptionStatus, string> = {
   TRIALING: "Ödeme bekleniyor",
@@ -63,7 +70,11 @@ function formatInstant(value: string): string {
 export default function SubscriptionSettingsPage() {
   return (
     <Suspense
-      fallback={<PageFrame>Abonelik bilgileri yükleniyor…</PageFrame>}
+      fallback={
+        <PageFrame>
+          <p className="text-sm text-[#5a7380]">Abonelik bilgileri yükleniyor…</p>
+        </PageFrame>
+      }
     >
       <SubscriptionSettingsContent />
     </Suspense>
@@ -85,12 +96,16 @@ function SubscriptionSettingsContent() {
   const payments = usePayments();
 
   if (plans.isLoading || current.isLoading || access.isLoading) {
-    return <PageFrame>Abonelik bilgileri yükleniyor…</PageFrame>;
+    return (
+      <PageFrame>
+        <p className="text-sm text-[#5a7380]">Abonelik bilgileri yükleniyor…</p>
+      </PageFrame>
+    );
   }
   if (plans.isError || current.isError || access.isError || !access.data) {
     return (
       <PageFrame>
-        <p role="alert" className="text-sm">
+        <p role="alert" className="text-sm text-red-700">
           Abonelik bilgileri yüklenemedi.
         </p>
       </PageFrame>
@@ -98,21 +113,39 @@ function SubscriptionSettingsContent() {
   }
 
   return (
-    <PageFrame width="sm">
-      <PageHeader
-        title="Abonelik"
-        description="Plan fiyatları veritabanından okunur. Kart bilgisi Planio’da tutulmaz; ödeme iyzico Checkout Form üzerinden doğrulanır."
+    <PageFrame width="md" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
       />
+
+      <div>
+        <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+          Ayarlar
+        </p>
+        <h1
+          className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+          style={displayFont}
+        >
+          Abonelik
+        </h1>
+        <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[#5a7380]">
+          Plan fiyatları veritabanından okunur. Kart bilgisi Planio’da tutulmaz;
+          ödeme iyzico Checkout Form üzerinden doğrulanır.
+        </p>
+      </div>
+
       {paymentResult === "success" ? (
-        <p role="status" className="mt-3 text-sm text-emerald-800">
+        <p role="status" className="mt-4 rounded-xl bg-[#b8e6df]/35 px-4 py-3 text-sm text-[#2f5563] ring-1 ring-[#b8e6df]/60">
           Ödeme doğrulandı. Abonelik güncellendi.
         </p>
       ) : null}
       {paymentResult === "failure" || paymentResult === "invalid" ? (
-        <p role="alert" className="mt-3 text-sm text-amber-800">
+        <p role="alert" className="mt-4 rounded-xl bg-[#fff8eb] px-4 py-3 text-sm text-[#8a6a2f] ring-1 ring-[#f0e0b8]">
           Ödeme doğrulanamadı. Abonelik aktifleştirilmedi.
         </p>
       ) : null}
+
       <CurrentSubscriptionCard
         subscription={current.data ?? null}
         access={access.data}
@@ -125,27 +158,38 @@ function SubscriptionSettingsContent() {
         readOnly={readOnly}
       />
       {readOnly ? null : (
-        <section className="mt-8">
-          <h2 className="text-lg font-semibold">Ödeme kayıtları</h2>
-          <div className="mt-4 grid gap-3">
-            {(payments.data ?? []).map((payment) => (
-              <article
-                key={payment.id}
-                className="rounded-xl border border-zinc-200 p-4 text-sm"
-              >
-                <p className="font-medium">
-                  {payment.amount} {payment.currency} ·{" "}
-                  {PAYMENT_STATUS_LABELS[payment.status]}
-                </p>
-                <p className="mt-1 text-zinc-600">
-                  {formatInstant(payment.createdAt)}
-                  {payment.errorCode ? ` · ${payment.errorCode}` : ""}
-                </p>
-              </article>
-            ))}
-            {payments.data?.length === 0 ? (
-              <p className="text-sm text-zinc-600">Henüz ödeme kaydı yok.</p>
-            ) : null}
+        <section className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+          <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+            <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+              Ödeme kayıtları
+            </h2>
+          </div>
+          <div className="p-4 sm:p-5">
+            {(payments.data ?? []).length ? (
+              <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+                {(payments.data ?? []).map((payment) => (
+                  <li
+                    key={payment.id}
+                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5"
+                  >
+                    <div>
+                      <p className="text-[15px] font-semibold text-[#1e3340]">
+                        {payment.amount} {payment.currency}
+                      </p>
+                      <p className="mt-0.5 text-[13px] text-[#5a7380]">
+                        {formatInstant(payment.createdAt)}
+                        {payment.errorCode ? ` · ${payment.errorCode}` : ""}
+                      </p>
+                    </div>
+                    <span className="inline-flex rounded-full bg-[#eef6f8] px-2.5 py-0.5 text-xs font-semibold text-[#3d6b7a]">
+                      {PAYMENT_STATUS_LABELS[payment.status]}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-[#5a7380]">Henüz ödeme kaydı yok.</p>
+            )}
           </div>
         </section>
       )}
@@ -193,66 +237,75 @@ function CurrentSubscriptionCard({
   }
 
   return (
-    <section className="mt-6 rounded-xl border border-zinc-200 p-6">
-      <h2 className="text-lg font-semibold">Mevcut plan</h2>
-      {subscription ? (
-        <dl className="mt-4 grid gap-3 text-sm">
-          <InfoRow label="Plan" value={subscription.plan.name} />
-          <InfoRow label="Durum" value={STATUS_LABELS[subscription.status]} />
-          <InfoRow
-            label="Faturalama dönemi"
-            value={PERIOD_LABELS[subscription.plan.billingPeriod]}
-          />
-          <InfoRow label="Fiyat" value={formatPrice(subscription.plan)} />
-          <InfoRow
-            label="Dönem"
-            value={`${formatInstant(subscription.currentPeriodStart)} – ${formatInstant(subscription.currentPeriodEnd)}`}
-          />
-        </dl>
-      ) : (
-        <p className="mt-3 text-sm text-zinc-600">
-          Henüz doğrulanmış bir abonelik yok. Plan seçildikten sonra iyzico
-          ödemesi doğrulanmadan abonelik aktif olmaz.
-        </p>
-      )}
-      <div className="mt-4 grid gap-1 text-sm text-zinc-600">
-        <p>
-          Erişim: {access.hasAccess ? "Açık" : "Kapalı"}
-          {access.status ? ` · ${STATUS_LABELS[access.status]}` : ""}
-        </p>
-        <p>
-          Personel: {access.usage.staff}
-          {access.limits.maxStaff != null ? ` / ${access.limits.maxStaff}` : " / sınırsız"}
-        </p>
-        <p>
-          Müşteri: {access.usage.customers}
-          {access.limits.maxCustomers != null
-            ? ` / ${access.limits.maxCustomers}`
-            : " / sınırsız"}
-        </p>
+    <section className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+      <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+        <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+          Mevcut plan
+        </h2>
       </div>
-      {readOnly ? (
-        <p className="mt-4 text-sm text-zinc-600">
-          {role === "ACCOUNTANT"
-            ? "Muhasebe rolü Planio aboneliğini yalnızca görüntüleyebilir. Yenileme işletme sahibine aittir."
-            : "Personel abonelik bilgilerini yalnızca görüntüleyebilir."}
-        </p>
-      ) : canCancel ? (
-        <Button
-          type="button"
-          variant="outline"
-          className="mt-4"
-          disabled={cancel.isPending}
-          onClick={() => setConfirmCancel(true)}
-        >
-          {cancel.isPending ? "İptal ediliyor…" : "Aboneliği iptal et"}
-        </Button>
-      ) : null}
-      {message ? (
-        <p role="status" className="mt-3 text-sm text-zinc-700">
-          {message}
-        </p>
-      ) : null}
+      <div className="p-5">
+        {subscription ? (
+          <dl className="grid gap-3 sm:grid-cols-2">
+            <InfoRow label="Plan" value={subscription.plan.name} />
+            <InfoRow label="Durum" value={STATUS_LABELS[subscription.status]} />
+            <InfoRow
+              label="Faturalama dönemi"
+              value={PERIOD_LABELS[subscription.plan.billingPeriod]}
+            />
+            <InfoRow label="Fiyat" value={formatPrice(subscription.plan)} />
+            <div className="sm:col-span-2">
+              <InfoRow
+                label="Dönem"
+                value={`${formatInstant(subscription.currentPeriodStart)} – ${formatInstant(subscription.currentPeriodEnd)}`}
+              />
+            </div>
+          </dl>
+        ) : (
+          <p className="text-sm text-[#5a7380]">
+            Henüz doğrulanmış bir abonelik yok. Plan seçildikten sonra iyzico
+            ödemesi doğrulanmadan abonelik aktif olmaz.
+          </p>
+        )}
+        <div className="mt-4 grid gap-1 rounded-xl bg-[#F7FBFC] px-4 py-3 text-[13px] text-[#5a7380] ring-1 ring-[#e4f0f4]">
+          <p>
+            Erişim: {access.hasAccess ? "Açık" : "Kapalı"}
+            {access.status ? ` · ${STATUS_LABELS[access.status]}` : ""}
+          </p>
+          <p>
+            Personel: {access.usage.staff}
+            {access.limits.maxStaff != null
+              ? ` / ${access.limits.maxStaff}`
+              : " / sınırsız"}
+          </p>
+          <p>
+            Müşteri: {access.usage.customers}
+            {access.limits.maxCustomers != null
+              ? ` / ${access.limits.maxCustomers}`
+              : " / sınırsız"}
+          </p>
+        </div>
+        {readOnly ? (
+          <p className="mt-4 text-sm text-[#5a7380]">
+            {role === "ACCOUNTANT"
+              ? "Muhasebe rolü Planio aboneliğini yalnızca görüntüleyebilir. Yenileme işletme sahibine aittir."
+              : "Personel abonelik bilgilerini yalnızca görüntüleyebilir."}
+          </p>
+        ) : canCancel ? (
+          <button
+            type="button"
+            className={`${btnOutline} mt-4`}
+            disabled={cancel.isPending}
+            onClick={() => setConfirmCancel(true)}
+          >
+            {cancel.isPending ? "İptal ediliyor…" : "Aboneliği iptal et"}
+          </button>
+        ) : null}
+        {message ? (
+          <p role="status" className="mt-3 text-sm text-[#5a7380]">
+            {message}
+          </p>
+        ) : null}
+      </div>
       <ConfirmDialog
         open={confirmCancel}
         title="Aboneliği iptal et"
@@ -283,6 +336,7 @@ function AvailablePlans({
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [country] = useState("Türkiye");
+  const [distanceSalesAccepted, setDistanceSalesAccepted] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const selectedPlan = useMemo(
     () => plans.find((plan) => plan.id === selectedPlanId) ?? null,
@@ -315,99 +369,150 @@ function AvailablePlans({
   }
 
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold">Kullanılabilir planlar</h2>
-      <div className="mt-4 grid gap-3">
+    <section className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+      <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+        <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+          Kullanılabilir planlar
+        </h2>
+      </div>
+      <div className="grid gap-3 p-5">
         {plans.map((plan) => {
           const selected =
             current?.status === "ACTIVE" && current.plan.id === plan.id;
+          const isChosen = selectedPlanId === plan.id;
           return (
-            <article
+            <div
               key={plan.id}
-              className="rounded-xl border border-zinc-200 p-4 text-sm"
+              className={`rounded-xl px-4 py-4 ring-1 ${
+                isChosen
+                  ? "bg-[#eef6f8] ring-[#7eb8c8]"
+                  : "bg-[#F7FBFC] ring-[#e4f0f4]"
+              }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-medium">
+                <p className="text-[15px] font-semibold text-[#1e3340]">
                   {plan.name} · {PERIOD_LABELS[plan.billingPeriod]}
                 </p>
-                <p>{formatPrice(plan)}</p>
+                <p className="text-[15px] font-semibold text-[#2f5563]">
+                  {formatPrice(plan)}
+                </p>
               </div>
               {readOnly ? null : (
-                <Button
+                <button
                   type="button"
-                  className="mt-3"
-                  variant={selectedPlanId === plan.id ? "default" : "outline"}
+                  className={`mt-3 ${selected || isChosen ? btnPrimary : btnOutline}`}
                   disabled={selected}
                   onClick={() => setSelectedPlanId(plan.id)}
                 >
-                  {selected ? "Mevcut plan" : "Planı seç"}
-                </Button>
+                  {selected ? "Mevcut plan" : isChosen ? "Seçildi" : "Planı seç"}
+                </button>
               )}
-            </article>
+            </div>
           );
         })}
       </div>
+
       {readOnly || !selectedPlan ? null : (
         <form
-          className="mt-6 grid gap-3 rounded-xl border border-zinc-200 p-4 text-sm"
+          className="border-t border-[#e4f0f4] p-5"
           onSubmit={(event) => {
             event.preventDefault();
             void handlePay();
           }}
         >
-          <h3 className="font-medium">Ödeme bilgileri</h3>
-          <p className="text-zinc-600">
+          <h3 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+            Ödeme bilgileri
+          </h3>
+          <p className="mt-1 text-[13px] text-[#5a7380]">
             Kart numarası ve CVV bu forma girilmez. iyzico formu kartı kendi
             sayfasında alır.
           </p>
-          <label className="grid gap-1">
-            T.C. kimlik no
-            <input
-              required
-              minLength={5}
-              value={identityNumber}
-              onChange={(event) => setIdentityNumber(event.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            />
-          </label>
-          <label className="grid gap-1">
-            GSM
-            <input
-              required
-              aria-label="GSM"
-              placeholder="+905551112233"
-              value={gsmNumber}
-              onChange={(event) => setGsmNumber(event.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            />
-          </label>
-          <label className="grid gap-1">
-            Adres
-            <input
-              required
-              minLength={3}
-              value={address}
-              onChange={(event) => setAddress(event.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            />
-          </label>
-          <label className="grid gap-1">
-            Şehir
-            <input
-              required
-              minLength={2}
-              value={city}
-              onChange={(event) => setCity(event.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            />
-          </label>
-          <Button type="submit" disabled={checkout.isPending}>
-            {checkout.isPending ? "Ödeme başlatılıyor…" : "iyzico ile öde"}
-          </Button>
+          <div className="mt-4 grid gap-4">
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+              T.C. kimlik no
+              <input
+                required
+                minLength={5}
+                value={identityNumber}
+                onChange={(event) => setIdentityNumber(event.target.value)}
+                className={fieldClass}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+              GSM
+              <input
+                required
+                aria-label="GSM"
+                placeholder="+905551112233"
+                value={gsmNumber}
+                onChange={(event) => setGsmNumber(event.target.value)}
+                className={fieldClass}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+              Adres
+              <input
+                required
+                minLength={3}
+                value={address}
+                onChange={(event) => setAddress(event.target.value)}
+                className={fieldClass}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+              Şehir
+              <input
+                required
+                minLength={2}
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                className={fieldClass}
+              />
+            </label>
+            <label className="flex items-start gap-2.5 text-[13px] leading-5 text-[#5a7380]">
+              <input
+                type="checkbox"
+                required
+                aria-label="Mesafeli satış sözleşmesini kabul ediyorum"
+                checked={distanceSalesAccepted}
+                onChange={(event) =>
+                  setDistanceSalesAccepted(event.target.checked)
+                }
+                className="mt-0.5 h-4 w-4 rounded border-[#c5dde6] text-[#7eb8c8] accent-[#7eb8c8]"
+              />
+              <span>
+                <Link
+                  href="/mesafeli-satis-sozlesmesi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#3d6b7a] underline-offset-2 hover:underline"
+                >
+                  Mesafeli satış sözleşmesi
+                </Link>
+                ni okudum ve kabul ediyorum.
+              </span>
+            </label>
+            <div>
+              <button
+                type="submit"
+                disabled={checkout.isPending || !distanceSalesAccepted}
+                className={btnPrimary}
+              >
+                {checkout.isPending ? "Ödeme başlatılıyor…" : "iyzico ile öde"}
+              </button>
+              <div
+                className="mt-3 flex items-center gap-3"
+                aria-label="Kabul edilen kartlar"
+              >
+                <VisaLogo />
+                <MastercardLogo />
+              </div>
+            </div>
+          </div>
         </form>
       )}
       {message ? (
-        <p role="status" className="mt-3 text-sm text-zinc-700">
+        <p role="status" className="px-5 pb-5 text-sm text-[#5a7380]">
           {message}
         </p>
       ) : null}
@@ -415,11 +520,61 @@ function AvailablePlans({
   );
 }
 
+function VisaLogo() {
+  return (
+    <svg
+      role="img"
+      aria-label="Visa"
+      width="52"
+      height="32"
+      viewBox="0 0 52 32"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="52" height="32" rx="6" fill="#F7FBFC" stroke="#c5dde6" />
+      <text
+        x="26"
+        y="20.5"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="12"
+        fontWeight="700"
+        fontStyle="italic"
+        fill="#1a1f71"
+      >
+        VISA
+      </text>
+    </svg>
+  );
+}
+
+function MastercardLogo() {
+  return (
+    <svg
+      role="img"
+      aria-label="Mastercard"
+      width="52"
+      height="32"
+      viewBox="0 0 52 32"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="52" height="32" rx="6" fill="#F7FBFC" stroke="#c5dde6" />
+      <circle cx="22" cy="16" r="7.5" fill="#eb001b" />
+      <circle cx="30" cy="16" r="7.5" fill="#f79e1b" />
+      <path
+        d="M26 10.2a7.5 7.5 0 0 1 0 11.6 7.5 7.5 0 0 1 0-11.6z"
+        fill="#ff5f00"
+      />
+    </svg>
+  );
+}
+
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-wrap justify-between gap-2">
-      <dt className="text-zinc-600">{label}</dt>
-      <dd>{value}</dd>
+    <div>
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+        {label}
+      </dt>
+      <dd className="mt-1 text-sm text-[#1e3340]">{value}</dd>
     </div>
   );
 }

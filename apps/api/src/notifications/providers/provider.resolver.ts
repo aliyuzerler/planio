@@ -104,12 +104,14 @@ export class NotificationProviderResolver {
     if (channel === "EMAIL") {
       const host = this.config.get("SMTP_HOST", { infer: true });
       const fromEmail = this.config.get("SMTP_FROM", { infer: true });
-      if (!host || !fromEmail) return null;
+      const username = this.config.get("SMTP_USER", { infer: true });
+      const password = this.config.get("SMTP_PASSWORD", { infer: true });
+      if (!host || !fromEmail || !username || !password) return null;
       return new SmtpEmailProvider({
         host,
         port: this.config.get("SMTP_PORT", { infer: true }),
-        username: this.config.get("SMTP_USER", { infer: true }),
-        password: this.config.get("SMTP_PASSWORD", { infer: true }),
+        username,
+        password,
         fromEmail,
       });
     }

@@ -3,9 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TenantPosProvider, UyumsoftProvider } from "@xenior/types";
-import { Button } from "@xenior/ui";
 import { PageFrame } from "@/components/ui/page-frame";
-import { PageHeader } from "@/components/ui/page-header";
 import { AppError } from "@/lib/api/errors";
 import {
   getTenantPaymentSettings,
@@ -16,6 +14,12 @@ import {
   upsertTenantUyumsoftSettings,
 } from "@/lib/invoicing/invoicing-api";
 import { useAuthStore } from "@/stores/auth-store";
+
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+const fieldClass =
+  "rounded-xl border-0 bg-[#F7FBFC] px-3 py-2.5 text-[15px] text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none transition focus:ring-2 focus:ring-[#7eb8c8]";
+const btnPrimary =
+  "inline-flex items-center justify-center rounded-xl bg-[#7eb8c8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60";
 
 export default function IntegrationsPage() {
   const role = useAuthStore((state) =>
@@ -122,124 +126,165 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <PageFrame width="sm">
-      <PageHeader
-        title="Entegrasyonlar"
-        description="İşletme sanal POS ve Uyumsoft bilgileri Bildirimler’den ayrı tutulur; Planio abonelik iyzico anahtarlarıyla karışmaz."
+    <PageFrame width="md" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
       />
+
+      <div>
+        <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+          Ayarlar
+        </p>
+        <h1
+          className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+          style={displayFont}
+        >
+          Entegrasyonlar
+        </h1>
+        <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[#5a7380]">
+          İşletme sanal POS ve Uyumsoft bilgileri Bildirimler’den ayrı tutulur;
+          Planio abonelik iyzico anahtarlarıyla karışmaz.
+        </p>
+      </div>
+
       {settings.isLoading ? (
-        <p className="mt-4 text-sm">Ayarlar yükleniyor…</p>
+        <p className="mt-8 text-sm text-[#5a7380]">Ayarlar yükleniyor…</p>
       ) : (
-        <form onSubmit={handleSubmit} className="mt-6 grid gap-3 rounded-xl border border-zinc-200 p-6">
-          <h2 className="text-lg font-semibold">Sanal POS</h2>
-          <p className="text-sm text-zinc-600">
-            {current?.hasCredentials
-              ? "Kayıtlı kimlik bilgileri var; yeni değer yazmazsanız mevcut şifreli kayıt korunur."
-              : "Henüz kimlik bilgisi yok. Generic sağlayıcı ödeme linkini sandbox olarak tamamlar."}
-          </p>
-          <label className="flex flex-col gap-1 text-sm">
-            Sağlayıcı
-            <select
-              aria-label="POS sağlayıcı"
-              value={provider}
-              onChange={(event) => setProvider(event.target.value as TenantPosProvider)}
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            >
-              <option value="GENERIC">Generic / sandbox</option>
-              <option value="IYZICO">iyzico (işletme)</option>
-            </select>
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(event) => setIsActive(event.target.checked)}
-            />
-            Aktif
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            API anahtarı
-            <input
-              aria-label="API anahtarı"
-              value={apiKey}
-              onChange={(event) => setApiKey(event.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Gizli anahtar
-            <input
-              type="password"
-              aria-label="Gizli anahtar"
-              value={secretKey}
-              onChange={(event) => setSecretKey(event.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            />
-          </label>
-          <Button type="submit" disabled={saving}>
-            {saving ? "Kaydediliyor…" : "Kaydet"}
-          </Button>
+        <form onSubmit={handleSubmit} className="mt-8 grid gap-5">
+          <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+            <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+              <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+                Sanal POS
+              </h2>
+              <p className="mt-0.5 text-[13px] text-[#5a7380]">
+                {current?.hasCredentials
+                  ? "Kayıtlı kimlik bilgileri var; yeni değer yazmazsanız mevcut şifreli kayıt korunur."
+                  : "Henüz kimlik bilgisi yok. Generic sağlayıcı ödeme linkini sandbox olarak tamamlar."}
+              </p>
+            </div>
+            <div className="grid gap-4 p-5">
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+                Sağlayıcı
+                <select
+                  aria-label="POS sağlayıcı"
+                  value={provider}
+                  onChange={(event) =>
+                    setProvider(event.target.value as TenantPosProvider)
+                  }
+                  className={fieldClass}
+                >
+                  <option value="GENERIC">Generic / sandbox</option>
+                  <option value="IYZICO">iyzico (işletme)</option>
+                </select>
+              </label>
+              <label className="flex items-center gap-2 text-sm text-[#1e3340]">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(event) => setIsActive(event.target.checked)}
+                  className="accent-[#7eb8c8]"
+                />
+                Aktif
+              </label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+                API anahtarı
+                <input
+                  aria-label="API anahtarı"
+                  value={apiKey}
+                  onChange={(event) => setApiKey(event.target.value)}
+                  className={fieldClass}
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+                Gizli anahtar
+                <input
+                  type="password"
+                  aria-label="Gizli anahtar"
+                  value={secretKey}
+                  onChange={(event) => setSecretKey(event.target.value)}
+                  className={fieldClass}
+                />
+              </label>
+              <button type="submit" disabled={saving} className={btnPrimary}>
+                {saving ? "Kaydediliyor…" : "Kaydet"}
+              </button>
+            </div>
+          </section>
         </form>
       )}
+
       {uyumsoft.isLoading ? (
-        <p className="mt-4 text-sm">Uyumsoft yükleniyor…</p>
+        <p className="mt-6 text-sm text-[#5a7380]">Uyumsoft yükleniyor…</p>
       ) : (
-        <form onSubmit={handleUyumsoft} className="mt-6 grid gap-3 rounded-xl border border-zinc-200 p-6">
-          <h2 className="text-lg font-semibold">Uyumsoft e-Fatura / SMM</h2>
-          <p className="text-sm text-zinc-600">
-            {currentUyumsoft?.hasCredentials
-              ? "Kayıtlı Uyumsoft kimliği var; boş bırakırsanız şifreli kayıt korunur."
-              : "Generic / sandbox, dahili fiş kesilmiş satıştan SMM veya e-Fatura numarası üretir. Canlı Uyumsoft için kullanıcı adı ve parola gerekir."}
-          </p>
-          <label className="flex flex-col gap-1 text-sm">
-            Sağlayıcı
-            <select
-              aria-label="Uyumsoft sağlayıcı"
-              value={uyumsoftProvider}
-              onChange={(event) =>
-                setUyumsoftProvider(event.target.value as UyumsoftProvider)
-              }
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            >
-              <option value="GENERIC">Generic / sandbox</option>
-              <option value="UYUMSOFT">Uyumsoft</option>
-            </select>
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={uyumsoftActive}
-              onChange={(event) => setUyumsoftActive(event.target.checked)}
-            />
-            Aktif
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Kullanıcı adı
-            <input
-              aria-label="Uyumsoft kullanıcı adı"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Parola
-            <input
-              type="password"
-              aria-label="Uyumsoft parola"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="rounded-md border border-zinc-300 px-3 py-2"
-            />
-          </label>
-          <Button type="submit" disabled={saving}>
-            {saving ? "Kaydediliyor…" : "Kaydet"}
-          </Button>
+        <form onSubmit={handleUyumsoft} className="mt-6 grid gap-5">
+          <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+            <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-5 py-4">
+              <h2 className="text-lg font-semibold text-[#2f5563]" style={displayFont}>
+                Uyumsoft e-Fatura / SMM
+              </h2>
+              <p className="mt-0.5 text-[13px] text-[#5a7380]">
+                {currentUyumsoft?.hasCredentials
+                  ? "Kayıtlı Uyumsoft kimliği var; boş bırakırsanız şifreli kayıt korunur."
+                  : "Generic / sandbox, dahili fiş kesilmiş satıştan SMM veya e-Fatura numarası üretir. Canlı Uyumsoft için kullanıcı adı ve parola gerekir."}
+              </p>
+            </div>
+            <div className="grid gap-4 p-5">
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+                Sağlayıcı
+                <select
+                  aria-label="Uyumsoft sağlayıcı"
+                  value={uyumsoftProvider}
+                  onChange={(event) =>
+                    setUyumsoftProvider(event.target.value as UyumsoftProvider)
+                  }
+                  className={fieldClass}
+                >
+                  <option value="GENERIC">Generic / sandbox</option>
+                  <option value="UYUMSOFT">Uyumsoft</option>
+                </select>
+              </label>
+              <label className="flex items-center gap-2 text-sm text-[#1e3340]">
+                <input
+                  type="checkbox"
+                  checked={uyumsoftActive}
+                  onChange={(event) => setUyumsoftActive(event.target.checked)}
+                  className="accent-[#7eb8c8]"
+                />
+                Aktif
+              </label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+                Kullanıcı adı
+                <input
+                  aria-label="Uyumsoft kullanıcı adı"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  className={fieldClass}
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#5a7380]">
+                Parola
+                <input
+                  type="password"
+                  aria-label="Uyumsoft parola"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className={fieldClass}
+                />
+              </label>
+              <button type="submit" disabled={saving} className={btnPrimary}>
+                {saving ? "Kaydediliyor…" : "Kaydet"}
+              </button>
+            </div>
+          </section>
         </form>
       )}
-      {message ? <p className="mt-4 text-sm text-emerald-800">{message}</p> : null}
+
+      {message ? (
+        <p className="mt-4 text-sm font-medium text-[#2f5563]">{message}</p>
+      ) : null}
       {error ? (
-        <p role="alert" className="mt-4 text-sm text-red-700">
+        <p role="alert" className="mt-4 text-sm font-medium text-red-700">
           {error}
         </p>
       ) : null}

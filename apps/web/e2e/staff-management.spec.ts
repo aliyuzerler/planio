@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "31111111-1111-4111-8111-111111111111";
 const staffId = "32222222-2222-4222-8222-222222222222";
@@ -36,6 +37,7 @@ const staff = {
   phone: "+905551112233",
   email: "ada@example.test",
   notes: "Lead stylist",
+  loginRole: "STAFF",
   isActive: true,
   specializations: [
     {
@@ -57,7 +59,7 @@ const specialty = {
   updatedAt: now,
 };
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -67,6 +69,7 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  await mockSubscriptionAccess(page);
 });
 
 test("owner lists and creates tenant-scoped staff", async ({ page }) => {
@@ -125,7 +128,7 @@ test("owner lists and creates tenant-scoped staff", async ({ page }) => {
   await page.goto("/settings/staff");
   await expect(page.getByRole("heading", { name: "Personel" })).toBeVisible();
   await expect(page.getByText("Ada Lovelace")).toBeVisible();
-  await page.getByRole("link", { name: "Yeni personel" }).click();
+  await page.getByRole("link", { name: "Yeni kullanıcı" }).click();
   await page.getByLabel("Ad", { exact: true }).fill("Grace");
   await page.getByLabel("Soyad", { exact: true }).fill("Hopper");
   const created = page.waitForResponse(
@@ -133,7 +136,7 @@ test("owner lists and creates tenant-scoped staff", async ({ page }) => {
       response.request().method() === "POST" &&
       /\/api\/v1\/staff\/?$/.test(new URL(response.url()).pathname),
   );
-  await page.getByRole("button", { name: "Personel oluştur" }).click();
+  await page.getByRole("button", { name: "Kullanıcı oluştur" }).click();
   await created;
 
   await expect(page).toHaveURL(new RegExp(`/settings/staff/${staffId}$`), {

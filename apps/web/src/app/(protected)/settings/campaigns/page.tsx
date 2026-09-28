@@ -2,22 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@xenior/ui";
+import { ArrowRight, Megaphone } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
-import { PageHeader } from "@/components/ui/page-header";
 import { QueryState } from "@/components/ui/query-state";
-import {
-  DataTable,
-  DataTableBody,
-  DataTableCell,
-  DataTableHead,
-  DataTableHeaderCell,
-  DataTableRow,
-} from "@/components/ui/data-table";
 import {
   useCampaignList,
   useCanManageCampaigns,
 } from "@/lib/campaigns/campaign-queries";
+
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+const controlClass =
+  "rounded-xl bg-white px-3 py-2.5 text-sm text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none transition focus:ring-2 focus:ring-[#7eb8c8]";
 
 export default function CampaignsPage() {
   const [active, setActive] = useState<"all" | "true" | "false">("all");
@@ -27,79 +22,111 @@ export default function CampaignsPage() {
   );
 
   return (
-    <PageFrame width="lg">
-      <PageHeader
-        title="Kampanyalar"
-        description="Tarih aralıklı yüzde veya tutar indirimi. Randevu aynı fiyatı snapshot olarak kaydeder."
-        actions={
-          canManage ? (
-            <Button asChild>
-              <Link href="/settings/campaigns/new">Yeni kampanya</Link>
-            </Button>
-          ) : null
-        }
+    <PageFrame width="lg" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
       />
-      <div className="mt-6">
-        <select
-          aria-label="Durum filtresi"
-          value={active}
-          onChange={(event) => setActive(event.target.value as typeof active)}
-          className="rounded-md border border-zinc-300 px-3 py-2"
-        >
-          <option value="all">Tümü</option>
-          <option value="true">Aktif</option>
-          <option value="false">Pasif</option>
-        </select>
+
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Pazarlama
+          </p>
+          <h1
+            className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+            style={displayFont}
+          >
+            Kampanyalar
+          </h1>
+          <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[#5a7380]">
+            Tarih aralıklı yüzde veya tutar indirimi. Randevu aynı fiyatı
+            snapshot olarak kaydeder.
+          </p>
+        </div>
+        {canManage ? (
+          <Link
+            href="/settings/campaigns/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]"
+          >
+            <Megaphone className="h-4 w-4" />
+            Yeni kampanya
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        ) : null}
       </div>
-      <QueryState
-        isLoading={campaigns.isLoading}
-        isError={campaigns.isError}
-        isEmpty={campaigns.data?.length === 0}
-        loading="Kampanyalar yükleniyor…"
-        error="Kampanyalar yüklenemedi."
-        empty="Henüz kampanya yok."
-      >
-        {campaigns.data ? (
-          <DataTable caption="Kampanya listesi">
-            <DataTableHead>
-              <DataTableRow>
-                <DataTableHeaderCell>Kampanya</DataTableHeaderCell>
-                <DataTableHeaderCell>İndirim</DataTableHeaderCell>
-                <DataTableHeaderCell>Tarih</DataTableHeaderCell>
-                <DataTableHeaderCell>Durum</DataTableHeaderCell>
-              </DataTableRow>
-            </DataTableHead>
-            <DataTableBody>
-              {campaigns.data.map((campaign) => (
-                <DataTableRow key={campaign.id}>
-                  <DataTableCell>
+
+      <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="flex flex-wrap gap-3 border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-4 py-3 sm:px-5">
+          <select
+            aria-label="Durum filtresi"
+            value={active}
+            onChange={(event) =>
+              setActive(event.target.value as typeof active)
+            }
+            className={controlClass}
+          >
+            <option value="all">Tümü</option>
+            <option value="true">Aktif</option>
+            <option value="false">Pasif</option>
+          </select>
+        </div>
+
+        <div className="p-4 sm:p-5">
+          <QueryState
+            isLoading={campaigns.isLoading}
+            isError={campaigns.isError}
+            isEmpty={campaigns.data?.length === 0}
+            loading="Kampanyalar yükleniyor…"
+            error="Kampanyalar yüklenemedi."
+            empty="Henüz kampanya yok."
+          >
+            {campaigns.data ? (
+              <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+                {campaigns.data.map((campaign) => (
+                  <li key={campaign.id}>
                     <Link
                       href={`/settings/campaigns/${campaign.id}`}
-                      className="font-medium underline"
+                      className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 transition hover:bg-[#eef6f8]"
                     >
-                      {campaign.name}
+                      <div className="min-w-0">
+                        <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                          {campaign.name}
+                        </p>
+                        <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
+                          {campaign.discountType === "PERCENT"
+                            ? `%${campaign.discountValue}`
+                            : `${campaign.discountValue} TRY`}
+                          {" · "}
+                          {new Date(campaign.startsAt).toLocaleDateString(
+                            "tr-TR",
+                          )}{" "}
+                          –{" "}
+                          {new Date(campaign.endsAt).toLocaleDateString(
+                            "tr-TR",
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            campaign.isActive
+                              ? "bg-[#b8e6df]/45 text-[#2f5563]"
+                              : "bg-[#e4f0f4] text-[#5a7380]"
+                          }`}
+                        >
+                          {campaign.isActive ? "Aktif" : "Pasif"}
+                        </span>
+                        <ArrowRight className="h-4 w-4 text-[#7eb8c8]" />
+                      </div>
                     </Link>
-                  </DataTableCell>
-                  <DataTableCell>
-                    {campaign.discountType === "PERCENT"
-                      ? `%${campaign.discountValue}`
-                      : `${campaign.discountValue} TRY`}
-                  </DataTableCell>
-                  <DataTableCell>
-                    {new Date(campaign.startsAt).toLocaleDateString("tr-TR")} –{" "}
-                    {new Date(campaign.endsAt).toLocaleDateString("tr-TR")}
-                  </DataTableCell>
-                  <DataTableCell>
-                    <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs">
-                      {campaign.isActive ? "Aktif" : "Pasif"}
-                    </span>
-                  </DataTableCell>
-                </DataTableRow>
-              ))}
-            </DataTableBody>
-          </DataTable>
-        ) : null}
-      </QueryState>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </QueryState>
+        </div>
+      </div>
     </PageFrame>
   );
 }

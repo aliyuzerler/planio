@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "11111111-1111-4111-8111-111111111111";
 const now = "2026-09-05T00:00:00.000Z";
@@ -50,7 +51,7 @@ const hours = {
   })),
 };
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -60,6 +61,7 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  await mockSubscriptionAccess(page);
 });
 
 test("owner updates the selected business without sending businessId", async ({
@@ -88,7 +90,7 @@ test("owner updates the selected business without sending businessId", async ({
 
   await page.goto("/settings/business");
   await expect(
-    page.getByRole("heading", { name: "İşletme ayarları" }),
+    page.getByRole("heading", { name: "İşletme" }),
   ).toBeVisible();
   await page.getByLabel("İşletme adı").fill("Yeni İşletme Adı");
   await page.getByRole("button", { name: "Değişiklikleri kaydet" }).click();

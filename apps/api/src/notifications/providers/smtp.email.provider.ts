@@ -51,8 +51,9 @@ export class SmtpEmailProvider implements NotificationProvider {
       const info = await transport.sendMail({
         from: this.credentials.fromEmail,
         to: destination,
-        subject: message.subject ?? "Xenior bildirimi",
+        subject: message.subject ?? "Planio bildirimi",
         text: message.body,
+        ...(message.html ? { html: message.html } : {}),
       });
       return {
         provider: this.name,

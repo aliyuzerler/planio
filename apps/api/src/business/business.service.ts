@@ -12,6 +12,7 @@ import { AuditLogService } from "../audit/audit-log.service";
 import { RequestContextService } from "../authorization/request-context.service";
 import { PrismaService } from "../infrastructure/prisma/prisma.service";
 import { MailService } from "../notifications/mail.service";
+import { renderInviteEmail } from "../notifications/email-templates";
 import { SubscriptionAccessService } from "../subscriptions/subscription-access.service";
 import { InviteAccountantDto } from "./dto/invite-accountant.dto";
 import { UpdateBusinessDto } from "./dto/update-business.dto";
@@ -162,6 +163,16 @@ export class BusinessService {
       });
     }
 
+    const staff = await this.prisma.staff.create({
+      data: {
+        businessId,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        email,
+        loginRole: "ACCOUNTANT",
+      },
+    });
+
     const raw = createAuthTokenValue();
     await this.prisma.authToken.create({
       data: {
@@ -171,18 +182,32 @@ export class BusinessService {
         businessId,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         metadata: {
+          staffId: staff.id,
           role: "ACCOUNTANT",
           firstName: input.firstName,
           lastName: input.lastName,
         },
       },
     });
-    const link = `${this.config.get("WEB_URL", { infer: true })}/invite?token=${encodeURIComponent(raw)}`;
+    const webUrl = this.config.get("WEB_URL", { infer: true });
+    const link = `${webUrl}/invite?token=${encodeURIComponent(raw)}`;
+    const business = await this.prisma.business.findUniqueOrThrow({
+      where: { id: businessId },
+      select: { name: true },
+    });
+    const rendered = renderInviteEmail({
+      webUrl,
+      inviteUrl: link,
+      email,
+      businessName: business.name,
+      roleLabel: "Muhasebe",
+    });
     await this.mail?.sendBestEffort({
       businessId,
       destination: email,
-      subject: "Xenior muhasebe daveti",
-      body: `Xenior muhasebe hesabınıza katılmak için: ${link}`,
+      subject: rendered.subject,
+      body: rendered.text,
+      html: rendered.html,
     });
     return { sent: true };
   }

@@ -1,6 +1,7 @@
 import type {
   FinanceSummaryReport,
   ListReportsQuery,
+  ListTenantAuditLogsQuery,
   PaginatedResponse,
   TenantAuditLogItem,
 } from "@xenior/types";
@@ -21,13 +22,15 @@ export async function getFinanceSummary(
   );
 }
 
-export async function listTenantAuditLogs(filters: {
-  page?: number;
-  pageSize?: number;
-} = {}): Promise<PaginatedResponse<TenantAuditLogItem>> {
+export async function listTenantAuditLogs(
+  filters: ListTenantAuditLogsQuery = {},
+): Promise<PaginatedResponse<TenantAuditLogItem>> {
   const params = new URLSearchParams();
   params.set("page", String(filters.page ?? 1));
   params.set("pageSize", String(filters.pageSize ?? 25));
+  if (filters.from) params.set("from", filters.from);
+  if (filters.to) params.set("to", filters.to);
+  if (filters.action) params.set("action", filters.action);
   return paginatedTenantAuditLogSchema.parse(
     await apiRequest<unknown>(`/audit-logs?${params}`),
   );

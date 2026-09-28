@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "91111111-1111-4111-8111-111111111111";
 
@@ -83,6 +84,7 @@ test("owner logs in through the BFF and reaches the dashboard", async ({
     route.fulfill({ json: { ...emptyPage, pageSize: 1 } }),
   );
   await page.route("**/api/v1/staff**", (route) => route.fulfill({ json: [] }));
+  await mockSubscriptionAccess(page);
 
   await page.goto("/login");
   await page.getByLabel("E-posta").fill("owner@example.test");

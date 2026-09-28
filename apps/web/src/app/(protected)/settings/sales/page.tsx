@@ -1,82 +1,103 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@xenior/ui";
+import { ArrowRight, ShoppingBag } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
-import { PageHeader } from "@/components/ui/page-header";
 import { QueryState } from "@/components/ui/query-state";
-import {
-  DataTable,
-  DataTableBody,
-  DataTableCell,
-  DataTableHead,
-  DataTableHeaderCell,
-  DataTableRow,
-} from "@/components/ui/data-table";
 import { useCanWriteCash, useSaleList } from "@/lib/ledger/ledger-queries";
 
-const STATUS_LABEL = { OPEN: "Açık", SETTLED: "Kapandı" };
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+const STATUS_LABEL = { OPEN: "Açık", SETTLED: "Kapandı" } as const;
 
 export default function SalesPage() {
   const sales = useSaleList();
   const canWrite = useCanWriteCash();
 
   return (
-    <PageFrame width="lg">
-      <PageHeader
-        title="Satışlar"
-        description="Tamamlanan randevu ve tezgah hizmet satışları. Açık hesap = satış − tahsilat."
-        actions={
-          canWrite ? (
-            <Button asChild>
-              <Link href="/settings/sales/new">Tezgah satışı</Link>
-            </Button>
-          ) : null
-        }
+    <PageFrame width="lg" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
       />
-      <QueryState
-        isLoading={sales.isLoading}
-        isError={sales.isError}
-        isEmpty={sales.data?.items.length === 0}
-        loading="Satışlar yükleniyor…"
-        error="Satışlar yüklenemedi."
-        empty="Henüz satış yok. Randevu tamamlayın veya tezgah satışı oluşturun."
-      >
-        {sales.data ? (
-          <DataTable caption="Satış listesi">
-            <DataTableHead>
-              <DataTableRow>
-                <DataTableHeaderCell>Müşteri</DataTableHeaderCell>
-                <DataTableHeaderCell>Hizmet</DataTableHeaderCell>
-                <DataTableHeaderCell>Tutar</DataTableHeaderCell>
-                <DataTableHeaderCell>Kalan</DataTableHeaderCell>
-                <DataTableHeaderCell>Durum</DataTableHeaderCell>
-              </DataTableRow>
-            </DataTableHead>
-            <DataTableBody>
-              {sales.data.items.map((sale) => (
-                <DataTableRow key={sale.id}>
-                  <DataTableCell>
-                    <Link href={`/settings/sales/${sale.id}`} className="underline">
-                      {sale.customer.firstName} {sale.customer.lastName}
-                    </Link>
-                  </DataTableCell>
-                  <DataTableCell>
-                    {sale.lines[0]?.nameSnapshot ?? "Hizmet"}
-                  </DataTableCell>
-                  <DataTableCell>
-                    {sale.totalAmount} {sale.currency}
-                  </DataTableCell>
-                  <DataTableCell>
-                    {sale.remainingAmount} {sale.currency}
-                  </DataTableCell>
-                  <DataTableCell>{STATUS_LABEL[sale.status]}</DataTableCell>
-                </DataTableRow>
-              ))}
-            </DataTableBody>
-          </DataTable>
+
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Finans
+          </p>
+          <h1
+            className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+            style={displayFont}
+          >
+            Satışlar
+          </h1>
+          <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[#5a7380]">
+            Tamamlanan randevu ve tezgah hizmet satışları. Açık hesap = satış −
+            tahsilat.
+          </p>
+        </div>
+        {canWrite ? (
+          <Link
+            href="/settings/sales/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Tezgah satışı
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         ) : null}
-      </QueryState>
+      </div>
+
+      <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="p-4 sm:p-5">
+          <QueryState
+            isLoading={sales.isLoading}
+            isError={sales.isError}
+            isEmpty={sales.data?.items.length === 0}
+            loading="Satışlar yükleniyor…"
+            error="Satışlar yüklenemedi."
+            empty="Henüz satış yok. Randevu tamamlayın veya tezgah satışı oluşturun."
+          >
+            {sales.data ? (
+              <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+                {sales.data.items.map((sale) => (
+                  <li key={sale.id}>
+                    <Link
+                      href={`/settings/sales/${sale.id}`}
+                      className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 transition hover:bg-[#eef6f8]"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                          {sale.customer.firstName} {sale.customer.lastName}
+                        </p>
+                        <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
+                          {sale.lines[0]?.nameSnapshot ?? "Hizmet"} ·{" "}
+                          {sale.totalAmount} {sale.currency}
+                          {sale.remainingAmount !== "0.00"
+                            ? ` · kalan ${sale.remainingAmount}`
+                            : ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            sale.status === "OPEN"
+                              ? "bg-[#fff8eb] text-[#8a6a2f]"
+                              : "bg-[#b8e6df]/45 text-[#2f5563]"
+                          }`}
+                        >
+                          {STATUS_LABEL[sale.status]}
+                        </span>
+                        <ArrowRight className="h-4 w-4 text-[#7eb8c8]" />
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </QueryState>
+        </div>
+      </div>
     </PageFrame>
   );
 }

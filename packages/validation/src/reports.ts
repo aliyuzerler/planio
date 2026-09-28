@@ -58,6 +58,7 @@ export const tenantAuditLogItemSchema: z.ZodType<TenantAuditLogItem> = z.object(
   action: z.string(),
   entityType: z.string(),
   entityId: z.string().uuid(),
+  summary: z.string().nullable().optional(),
   userId: z.string().uuid().nullable(),
   createdAt: z.string().datetime(),
 });
@@ -77,4 +78,13 @@ export const listTenantAuditLogsQuerySchema: z.ZodType<ListTenantAuditLogsQuery>
   z.object({
     page: z.number().int().positive().optional(),
     pageSize: z.number().int().positive().max(100).optional(),
+    from: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    to: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    action: z.string().min(1).max(120).optional(),
   });

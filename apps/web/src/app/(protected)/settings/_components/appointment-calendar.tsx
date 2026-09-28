@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AppointmentRecord, StaffProfile } from "@xenior/types";
-import { Button } from "@xenior/ui";
 import { useToast } from "@/components/ui/toast";
 import { AppError } from "@/lib/api/errors";
 import { rescheduleAppointment } from "@/lib/appointments/appointment-api";
@@ -52,7 +51,7 @@ export function AppointmentCalendar() {
   const [cursor, setCursor] = useState(() => new Date());
   const [staffId, setStaffId] = useState("");
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const staff = useStaffList({ isActive: true });
+  const staff = useStaffList({ isActive: true, loginRole: "STAFF" });
   const range = calendarRange(view, cursor);
   const days = calendarDays(view, cursor);
   const appointments = useCalendarAppointments({
@@ -131,122 +130,131 @@ export function AppointmentCalendar() {
   }
 
   return (
-    <div className="mt-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex overflow-hidden rounded-md border border-zinc-300">
-          {VIEWS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              aria-pressed={view === item.id}
-              className={`px-3 py-2 text-sm ${view === item.id ? "bg-zinc-900 text-white" : "bg-white"}`}
-              onClick={() => setView(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setCursor((current) => shiftCalendarCursor(current, view, -1))}
-          >
-            Önceki
-          </Button>
-          <Button type="button" variant="outline" onClick={() => setCursor(new Date())}>
-            Bugün
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setCursor((current) => shiftCalendarCursor(current, view, 1))}
-          >
-            Sonraki
-          </Button>
-        </div>
-        <input
-          aria-label="Tarih"
-          type="date"
-          value={formatYmd(cursor)}
-          onChange={(event) => {
-            if (!event.target.value) return;
-            setCursor(parseYmd(event.target.value));
-          }}
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-        />
-        {isStaff ? null : (
-          <select
-            aria-label="Personel filtresi"
-            value={staffId}
-            onChange={(event) => setStaffId(event.target.value)}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-          >
-            <option value="">Tüm personel</option>
-            {(staff.data ?? []).map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.firstName} {item.lastName}
-              </option>
+    <div className="mt-8">
+      <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70">
+        <div className="flex flex-wrap items-center gap-3 border-b border-[#e4f0f4] bg-[#eef6f8]/50 px-4 py-3 sm:px-5">
+          <div className="flex overflow-hidden rounded-xl bg-white ring-1 ring-[#c5dde6]/80">
+            {VIEWS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={view === item.id}
+                className={`px-3.5 py-2 text-sm font-semibold transition ${
+                  view === item.id
+                    ? "bg-[#7eb8c8] text-white"
+                    : "bg-white text-[#3d6b7a] hover:bg-[#F7FBFC]"
+                }`}
+                onClick={() => setView(item.id)}
+              >
+                {item.label}
+              </button>
             ))}
-          </select>
-        )}
-        <p className="text-sm text-zinc-600">
-          {view === "month"
-            ? cursor.toLocaleDateString("tr-TR", { month: "long", year: "numeric" })
-            : range.from === range.to
+          </div>
+          <div className="flex items-center gap-2">
+            <ToolbarButton
+              onClick={() =>
+                setCursor((current) => shiftCalendarCursor(current, view, -1))
+              }
+            >
+              Önceki
+            </ToolbarButton>
+            <ToolbarButton onClick={() => setCursor(new Date())}>Bugün</ToolbarButton>
+            <ToolbarButton
+              onClick={() =>
+                setCursor((current) => shiftCalendarCursor(current, view, 1))
+              }
+            >
+              Sonraki
+            </ToolbarButton>
+          </div>
+          <input
+            aria-label="Tarih"
+            type="date"
+            value={formatYmd(cursor)}
+            onChange={(event) => {
+              if (!event.target.value) return;
+              setCursor(parseYmd(event.target.value));
+            }}
+            className="rounded-xl bg-white px-3 py-2 text-sm text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none focus:ring-2 focus:ring-[#7eb8c8]"
+          />
+          {isStaff ? null : (
+            <select
+              aria-label="Personel filtresi"
+              value={staffId}
+              onChange={(event) => setStaffId(event.target.value)}
+              className="rounded-xl bg-white px-3 py-2 text-sm text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none focus:ring-2 focus:ring-[#7eb8c8]"
+            >
+              <option value="">Tüm personel</option>
+              {(staff.data ?? []).map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.firstName} {item.lastName}
+                </option>
+              ))}
+            </select>
+          )}
+          <p className="text-[13px] font-semibold text-[#3d6b7a]">
+            {view === "month"
               ? cursor.toLocaleDateString("tr-TR", {
-                  weekday: "long",
-                  day: "numeric",
                   month: "long",
                   year: "numeric",
                 })
-              : `${range.from} – ${range.to}`}
-        </p>
+              : range.from === range.to
+                ? cursor.toLocaleDateString("tr-TR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })
+                : `${range.from} – ${range.to}`}
+          </p>
+        </div>
+
+        <div className="p-3 sm:p-4">
+          {view === "month" ? (
+            <MonthGrid
+              days={days}
+              byDay={byDay}
+              cursor={cursor}
+              today={today}
+              draggingId={draggingId}
+              canWrite={canWrite}
+              onOpen={(id) => router.push(`/settings/appointments/${id}`)}
+              onDragStart={setDraggingId}
+              onDropDay={handleDayDrop}
+            />
+          ) : view === "day" ? (
+            <DayStaffGrid
+              day={days[0] ?? cursor}
+              staffColumns={staffColumns}
+              items={items}
+              hours={hours}
+              hourCount={hourCount}
+              today={today}
+              draggingId={draggingId}
+              canWrite={canWrite}
+              onOpen={(id) => router.push(`/settings/appointments/${id}`)}
+              onDragStart={setDraggingId}
+              onDropColumn={handleTimeDrop}
+            />
+          ) : (
+            <WeekGrid
+              days={days}
+              byDay={byDay}
+              hours={hours}
+              hourCount={hourCount}
+              today={today}
+              draggingId={draggingId}
+              canWrite={canWrite}
+              onOpen={(id) => router.push(`/settings/appointments/${id}`)}
+              onDragStart={setDraggingId}
+              onDropColumn={handleTimeDrop}
+            />
+          )}
+        </div>
       </div>
 
-      {view === "month" ? (
-        <MonthGrid
-          days={days}
-          byDay={byDay}
-          cursor={cursor}
-          today={today}
-          draggingId={draggingId}
-          canWrite={canWrite}
-          onOpen={(id) => router.push(`/settings/appointments/${id}`)}
-          onDragStart={setDraggingId}
-          onDropDay={handleDayDrop}
-        />
-      ) : view === "day" ? (
-        <DayStaffGrid
-          day={days[0] ?? cursor}
-          staffColumns={staffColumns}
-          items={items}
-          hours={hours}
-          hourCount={hourCount}
-          today={today}
-          draggingId={draggingId}
-          canWrite={canWrite}
-          onOpen={(id) => router.push(`/settings/appointments/${id}`)}
-          onDragStart={setDraggingId}
-          onDropColumn={handleTimeDrop}
-        />
-      ) : (
-        <WeekGrid
-          days={days}
-          byDay={byDay}
-          hours={hours}
-          hourCount={hourCount}
-          today={today}
-          draggingId={draggingId}
-          canWrite={canWrite}
-          onOpen={(id) => router.push(`/settings/appointments/${id}`)}
-          onDragStart={setDraggingId}
-          onDropColumn={handleTimeDrop}
-        />
-      )}
-
       {appointments.isLoading ? (
-        <p className="mt-3 text-sm text-zinc-600">Takvim yükleniyor…</p>
+        <p className="mt-3 text-sm text-[#5a7380]">Takvim yükleniyor…</p>
       ) : null}
       {appointments.isError ? (
         <p role="alert" className="mt-3 text-sm text-red-700">
@@ -254,12 +262,30 @@ export function AppointmentCalendar() {
         </p>
       ) : null}
       {!appointments.isLoading && !appointments.isError && items.length === 0 ? (
-        <p className="mt-3 text-sm text-zinc-600">
+        <p className="mt-3 text-sm text-[#5a7380]">
           Bu aralıkta randevu yok. Boş bir saate tıklayarak oluşturabilirsiniz;
           uygunluk sunucuda kontrol edilir.
         </p>
       ) : null}
     </div>
+  );
+}
+
+function ToolbarButton({
+  children,
+  onClick,
+}: {
+  children: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-[#3d6b7a] ring-1 ring-[#c5dde6]/80 transition hover:bg-[#F7FBFC]"
+    >
+      {children}
+    </button>
   );
 }
 
@@ -297,19 +323,21 @@ function WeekGrid({
   onDropColumn: (event: DragEvent<HTMLElement>, day: Date) => void;
 }) {
   return (
-    <div className="mt-4 overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+    <div className="overflow-x-auto rounded-xl bg-[#F7FBFC]/50 ring-1 ring-[#e4f0f4]">
       <div
         className="grid min-w-[720px]"
         style={{
           gridTemplateColumns: `72px repeat(${days.length}, minmax(140px, 1fr))`,
         }}
       >
-        <div className="border-b border-zinc-200 bg-zinc-50" />
+        <div className="border-b border-[#e4f0f4] bg-[#eef6f8]/70" />
         {days.map((day) => (
           <div
             key={formatYmd(day)}
-            className={`border-b border-l border-zinc-200 px-2 py-2 text-center text-sm ${
-              isSameDay(day, today) ? "bg-sky-50 font-medium text-sky-900" : "bg-zinc-50"
+            className={`border-b border-l border-[#e4f0f4] px-2 py-2 text-center text-sm ${
+              isSameDay(day, today)
+                ? "bg-[#b8e6df]/40 font-semibold text-[#2f5563]"
+                : "bg-[#eef6f8]/70 text-[#3d6b7a]"
             }`}
           >
             <div>{weekdayLabel(day)}</div>
@@ -385,7 +413,7 @@ function DayStaffGrid({
       : [{ id: "", firstName: "Personel", lastName: "" } as StaffProfile];
   const key = formatYmd(day);
   return (
-    <div className="mt-4 overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+    <div className="overflow-x-auto rounded-xl bg-[#F7FBFC]/50 ring-1 ring-[#e4f0f4]">
       <div
         className="grid min-w-[720px]"
         style={{
@@ -393,8 +421,10 @@ function DayStaffGrid({
         }}
       >
         <div
-          className={`border-b border-zinc-200 px-2 py-2 text-center text-sm ${
-            isSameDay(day, today) ? "bg-sky-50 font-medium text-sky-900" : "bg-zinc-50"
+          className={`border-b border-[#e4f0f4] px-2 py-2 text-center text-sm ${
+            isSameDay(day, today)
+              ? "bg-[#b8e6df]/40 font-semibold text-[#2f5563]"
+              : "bg-[#eef6f8]/70 text-[#3d6b7a]"
           }`}
         >
           {weekdayLabel(day)}
@@ -403,7 +433,7 @@ function DayStaffGrid({
         {columns.map((person) => (
           <div
             key={person.id || "all"}
-            className="border-b border-l border-zinc-200 bg-zinc-50 px-2 py-2 text-center text-sm"
+            className="border-b border-l border-[#e4f0f4] bg-[#eef6f8]/70 px-2 py-2 text-center text-sm font-semibold text-[#3d6b7a]"
           >
             {person.firstName} {person.lastName}
           </div>
@@ -466,12 +496,12 @@ function MonthGrid({
   onDropDay: (event: DragEvent<HTMLElement>, day: Date) => void;
 }) {
   return (
-    <div className="mt-4 overflow-x-auto rounded-xl border border-zinc-200 bg-white">
+    <div className="overflow-x-auto rounded-xl bg-[#F7FBFC]/50 ring-1 ring-[#e4f0f4]">
       <div className="grid min-w-[720px] grid-cols-7">
         {["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"].map((label) => (
           <div
             key={label}
-            className="border-b border-zinc-200 bg-zinc-50 px-2 py-2 text-center text-xs font-medium text-zinc-600"
+            className="border-b border-[#e4f0f4] bg-[#eef6f8]/70 px-2 py-2 text-center text-xs font-semibold text-[#5a7380]"
           >
             {label}
           </div>
@@ -485,13 +515,17 @@ function MonthGrid({
               data-calendar-day={key}
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => onDropDay(event, day)}
-              className={`min-h-32 border-b border-r border-zinc-100 p-1 ${
-                isSameDay(day, today) ? "bg-sky-50" : inMonth ? "bg-white" : "bg-zinc-50"
+              className={`min-h-32 border-b border-r border-[#eef6f8] p-1 ${
+                isSameDay(day, today)
+                  ? "bg-[#b8e6df]/30"
+                  : inMonth
+                    ? "bg-white"
+                    : "bg-[#eef6f8]/70"
               }`}
             >
               <div className="flex items-center justify-between px-1">
                 <span
-                  className={`text-xs ${inMonth ? "text-zinc-800" : "text-zinc-400"}`}
+                  className={`text-xs font-semibold ${inMonth ? "text-[#1e3340]" : "text-[#98b5d7]"}`}
                 >
                   {day.getDate()}
                 </span>
@@ -499,7 +533,7 @@ function MonthGrid({
                   <Link
                     href={`/settings/appointments/new?startAt=${encodeURIComponent(suggestedStartAt(day, 10))}`}
                     aria-label={`${key} için randevu oluştur`}
-                    className="text-xs text-zinc-500 hover:text-zinc-900"
+                    className="text-xs font-bold text-[#7eb8c8] hover:text-[#2f5563]"
                   >
                     +
                   </Link>
@@ -539,7 +573,7 @@ function HourGutter({
         return (
           <div
             key={hour}
-            className="absolute right-2 text-xs text-zinc-500"
+            className="absolute right-2 text-xs text-[#7eb8c8]"
             style={{ top: index * HOUR_PX - 6 }}
           >
             {String(hour).padStart(2, "0")}:00
@@ -577,7 +611,7 @@ function TimeColumn({
 }) {
   return (
     <div
-      className="relative border-l border-zinc-200"
+      className="relative border-l border-[#e4f0f4]"
       data-calendar-day={dayKey}
       data-calendar-staff={staffId ?? ""}
       onDragOver={(event) => event.preventDefault()}
@@ -590,7 +624,7 @@ function TimeColumn({
           ? `/settings/appointments/new?startAt=${encodeURIComponent(startAt)}&staffId=${staffId}`
           : `/settings/appointments/new?startAt=${encodeURIComponent(startAt)}`;
         const slotClass =
-          "absolute inset-x-0 z-0 border-t border-zinc-100 hover:bg-zinc-50";
+          "absolute inset-x-0 z-0 border-t border-[#eef6f8] hover:bg-[#eef6f8]/70";
         const slotStyle = {
           top: index * HOUR_PX,
           height: HOUR_PX,
@@ -660,7 +694,7 @@ function CalendarAppointmentBlock({
       tabIndex={0}
       draggable={confirmed && canWrite}
       aria-label={`${appointment.customer.firstName} ${appointment.customer.lastName} randevusu`}
-      className={`absolute inset-x-1 z-20 cursor-pointer overflow-hidden rounded-md border px-2 py-1 text-xs shadow-sm ${appointmentStatusClass(appointment.status)} ${
+      className={`absolute inset-x-1 z-20 cursor-pointer overflow-hidden rounded-xl border px-2 py-1 text-xs shadow-sm ${appointmentStatusClass(appointment.status)} ${
         dragging ? "opacity-50" : ""
       }`}
       style={{ top, height }}
@@ -738,7 +772,7 @@ function CalendarAppointmentChip({
       tabIndex={0}
       draggable={confirmed && canWrite}
       aria-label={`${appointment.customer.firstName} ${appointment.customer.lastName} randevusu`}
-      className={`cursor-pointer truncate rounded border px-1 py-0.5 text-[11px] ${appointmentStatusClass(appointment.status)} ${
+      className={`cursor-pointer truncate rounded-lg border px-1.5 py-0.5 text-[11px] font-medium ${appointmentStatusClass(appointment.status)} ${
         dragging ? "opacity-50" : ""
       }`}
       onDragStart={(event) => {

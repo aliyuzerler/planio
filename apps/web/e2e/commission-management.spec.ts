@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "81111111-1111-4111-8111-111111111111";
 const ruleId = "82222222-2222-4222-8222-222222222222";
@@ -52,7 +53,7 @@ const rule = {
   updatedAt: now,
 };
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -62,6 +63,7 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  await mockSubscriptionAccess(page);
 });
 
 test("owner creates a commission rule", async ({ page }) => {
@@ -94,10 +96,18 @@ test("owner creates a commission rule", async ({ page }) => {
   await page.getByRole("link", { name: "Yeni kural" }).click();
   await page.getByLabel("Kural adı").fill("Manikür %20");
   await page.getByLabel("Prim türü").selectOption("PERCENT");
-  await page.getByLabel("Prim değeri").fill("20");
+  await page.getByLabel("Prim değeri").fill("20.00");
   await page.getByLabel("Hedef hizmet").selectOption(serviceId);
+  const createdResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().includes("/api/v1/commissions/rules"),
+  );
   await page.getByRole("button", { name: "Kural oluştur" }).click();
-  await expect(page).toHaveURL(new RegExp(`/settings/commissions/${ruleId}$`));
+  await createdResponse;
+  await expect(page).toHaveURL(new RegExp(`/settings/commissions/${ruleId}$`), {
+    timeout: 15_000,
+  });
   expect(body).toMatchObject({
     name: "Manikür %20",
     commissionType: "PERCENT",

@@ -16,7 +16,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Planio",
-  description: "Güzellik işletmeleri için randevu ve işletme yönetimi",
+  description:
+    "Özel sağlık, diş ve güzellik klinikleri için randevu ve işletme yönetimi",
+  icons: {
+    icon: [{ url: "/planio-icon.svg", type: "image/svg+xml" }],
+    shortcut: ["/planio-icon.svg"],
+    apple: [{ url: "/planio-icon.svg" }],
+  },
 };
 
 export default function RootLayout({

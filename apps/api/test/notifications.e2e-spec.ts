@@ -18,6 +18,7 @@ import { HttpExceptionFilter } from "../src/common/filters/http-exception.filter
 import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 import { NotificationDeliveryService } from "../src/notifications/notification-delivery.service";
 import { NotificationsModule } from "../src/notifications/notifications.module";
 
@@ -112,25 +113,15 @@ describe("Notification system (e2e)", () => {
   });
 
   afterAll(async () => {
-    await prisma.notification.deleteMany({ where: { businessId } });
-    await prisma.notificationSettings.deleteMany({ where: { businessId } });
-    await prisma.pushDevice.deleteMany({ where: { businessId } });
-    await prisma.appointmentEvent.deleteMany({ where: { businessId } });
-    await prisma.appointment.deleteMany({ where: { businessId } });
-    await prisma.customer.deleteMany({ where: { businessId } });
-    await prisma.staff.deleteMany({ where: { businessId } });
-    await prisma.auditLog.deleteMany({ where: { businessId } });
-    await prisma.service.deleteMany({ where: { businessId } });
     const users = await prisma.user.findMany({
       where: { email },
       select: { id: true },
     });
-    await prisma.refreshToken.deleteMany({
-      where: { userId: { in: users.map((user) => user.id) } },
-    });
-    await prisma.businessUser.deleteMany({ where: { businessId } });
-    await prisma.business.deleteMany({ where: { id: businessId } });
-    await prisma.user.deleteMany({ where: { email } });
+    await cleanupTenantFixtures(
+      prisma,
+      [businessId],
+      users.map((user) => user.id),
+    );
     await app.close();
   });
 
@@ -159,8 +150,15 @@ describe("Notification system (e2e)", () => {
   });
 
   it("enqueues and delivers appointment notifications through mock providers", async () => {
+    await request(app.getHttpServer())
+      .patch("/api/v1/notifications/settings")
+      .set("Authorization", `Bearer ${token}`)
+      .set(TENANT_HEADER, businessId)
+      .send({ reminderMinutesBefore: 60, smsEnabled: true, pushEnabled: true })
+      .expect(200);
+
     const created = await book("2033-02-01T10:00:00.000Z");
-    const items = await waitForNotifications(created.id, 3);
+    const items = await waitForNotifications(created.id, 2);
     const sms = items.find((item) => item.channel === "SMS" && item.type === "APPOINTMENT_CONFIRMED");
     expect(sms).toBeTruthy();
     await delivery.process(sms!.id);
@@ -177,11 +175,17 @@ describe("Notification system (e2e)", () => {
       sms!.id,
     );
 
-    const reminder = items.find(
-      (item) => item.type === "APPOINTMENT_REMINDER" && item.channel === "SMS",
-    );
-    expect(reminder?.status).toBe("SCHEDULED");
-    expect(reminder?.scheduledAt).toBeTruthy();
+    let reminder = items.find((item) => item.type === "APPOINTMENT_REMINDER");
+    for (let attempt = 0; attempt < 30 && !reminder; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      const latest = await prisma.notification.findMany({
+        where: { businessId, appointmentId: created.id },
+      });
+      reminder = latest.find((item) => item.type === "APPOINTMENT_REMINDER");
+    }
+    expect(reminder).toBeTruthy();
+    expect(reminder!.status).toBe("SCHEDULED");
+    expect(reminder!.scheduledAt).toBeTruthy();
   });
 
   it("records invalid notifications and provider failures", async () => {

@@ -35,25 +35,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     () => sidebarSectionsForRole(business?.role),
     [business?.role],
   );
-  const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
+  const [folderState, setFolderState] = useState<{
+    pathname: string;
+    overrides: Record<string, boolean>;
+  }>({ pathname, overrides: {} });
 
-  useEffect(() => {
-    setOpenFolders((current) => {
-      let changed = false;
-      const next = { ...current };
-      for (const section of sections) {
-        if (section.kind !== "folder") continue;
-        if (
-          isSidebarFolderActive(pathname, section.children) &&
-          !next[section.id]
-        ) {
-          next[section.id] = true;
-          changed = true;
-        }
-      }
-      return changed ? next : current;
-    });
-  }, [pathname, sections]);
+  if (folderState.pathname !== pathname) {
+    setFolderState({ pathname, overrides: {} });
+  }
 
   useEffect(() => {
     if (access.data && !access.data.hasAccess && isSubscriptionWritePath(pathname)) {
@@ -70,10 +59,20 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
   }
 
-  function toggleFolder(id: string) {
-    setOpenFolders((current) => ({
+  function isFolderOpen(section: SidebarSection) {
+    if (section.kind !== "folder") return false;
+    if (section.id in folderState.overrides) {
+      return folderState.overrides[section.id]!;
+    }
+    return isSidebarFolderActive(pathname, section.children);
+  }
+
+  function toggleFolder(section: SidebarSection) {
+    if (section.kind !== "folder") return;
+    const nextOpen = !isFolderOpen(section);
+    setFolderState((current) => ({
       ...current,
-      [id]: !current[id],
+      overrides: { ...current.overrides, [section.id]: nextOpen },
     }));
   }
 
@@ -128,8 +127,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               key={section.id}
               section={section}
               pathname={pathname}
-              open={Boolean(openFolders[section.id])}
-              onToggle={() => toggleFolder(section.id)}
+              open={isFolderOpen(section)}
+              onToggle={() => toggleFolder(section)}
               onNavigate={closeMobile}
             />
           ))}

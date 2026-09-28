@@ -24,7 +24,9 @@ export class SubscriptionAccessService {
     await this.subscriptions.expireIfNeeded(tenantId);
     const subscription = await this.subscriptions.currentRecord(tenantId);
     const [staff, customers] = await Promise.all([
-      this.prisma.staff.count({ where: { businessId: tenantId, isActive: true } }),
+      this.prisma.staff.count({
+        where: { businessId: tenantId, isActive: true, loginRole: "STAFF" },
+      }),
       this.prisma.customer.count({
         where: { businessId: tenantId, isActive: true },
       }),

@@ -5,6 +5,7 @@ import type {
   ForgotPasswordInput,
   LoginInput,
   RegisterInput,
+  RegisterPendingResponse,
   ResetPasswordInput,
   VerifyEmailInput,
 } from "@xenior/types";
@@ -50,7 +51,9 @@ export function login(input: LoginInput): Promise<BrowserAuthSession> {
   });
 }
 
-export function register(input: RegisterInput): Promise<BrowserAuthSession> {
+export function register(
+  input: RegisterInput,
+): Promise<BrowserAuthSession | RegisterPendingResponse> {
   return authRequest("/register", {
     method: "POST",
     body: JSON.stringify(input),
@@ -83,7 +86,9 @@ export function resetPassword(input: ResetPasswordInput): Promise<void> {
   });
 }
 
-export function verifyEmail(input: VerifyEmailInput): Promise<void> {
+export function verifyEmail(
+  input: VerifyEmailInput,
+): Promise<BrowserAuthSession> {
   return authRequest("/verify-email", {
     method: "POST",
     body: JSON.stringify(input),

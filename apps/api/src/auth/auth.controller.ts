@@ -19,6 +19,7 @@ import {
 import type {
   AuthSessionResponse,
   CurrentUserResponse,
+  RegisterPendingResponse,
 } from "@xenior/types";
 import { Throttle } from "@nestjs/throttler";
 import { SkipTenant } from "../authorization/authorization.decorators";
@@ -45,9 +46,14 @@ export class AuthController {
   @Public()
   @Post("register")
   @ApiOperation({ summary: "Create a business owner account" })
-  @ApiCreatedResponse({ description: "Account and session created" })
+  @ApiCreatedResponse({
+    description:
+      "Account created; email verification required (session only in test)",
+  })
   @ApiConflictResponse({ description: "Email already registered" })
-  register(@Body() input: RegisterDto): Promise<AuthSessionResponse> {
+  register(
+    @Body() input: RegisterDto,
+  ): Promise<AuthSessionResponse | RegisterPendingResponse> {
     return this.authService.register(input);
   }
 
@@ -106,8 +112,11 @@ export class AuthController {
 
   @Public()
   @Post("verify-email")
-  @HttpCode(HttpStatus.NO_CONTENT)
-  verifyEmail(@Body() input: VerifyEmailDto): Promise<void> {
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: "Email verified and session created" })
+  verifyEmail(
+    @Body() input: VerifyEmailDto,
+  ): Promise<AuthSessionResponse> {
     return this.authService.verifyEmail(input);
   }
 

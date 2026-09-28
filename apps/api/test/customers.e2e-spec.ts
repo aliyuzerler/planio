@@ -21,6 +21,7 @@ import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { CustomersModule } from "../src/customers/customers.module";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 
 describe("Customer management (e2e)", () => {
   let app: INestApplication<App>;

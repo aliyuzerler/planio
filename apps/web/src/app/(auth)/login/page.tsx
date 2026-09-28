@@ -26,6 +26,12 @@ export default function LoginPage() {
       setSession(session.user, session.accessToken, session.memberships);
       router.replace("/dashboard");
     } catch (cause) {
+      if (cause instanceof AppError && cause.code === "EMAIL_NOT_VERIFIED") {
+        router.replace(
+          `/verify-email/pending?email=${encodeURIComponent(email)}`,
+        );
+        return;
+      }
       setError(
         cause instanceof AppError ? cause.message : "Giriş yapılamadı.",
       );

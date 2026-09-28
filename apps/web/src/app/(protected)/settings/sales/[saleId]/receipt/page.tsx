@@ -1,10 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Button } from "@xenior/ui";
+import { ArrowLeft, Download, Printer } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
-import { PageHeader } from "@/components/ui/page-header";
 import { useSaleReceipt } from "@/lib/ledger/ledger-queries";
+
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+const btnPrimary =
+  "inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]";
+const btnOutline =
+  "inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#2f5563] ring-1 ring-[#c5dde6] transition hover:bg-[#eef6f8]";
 
 export default function SaleReceiptPage() {
   const { saleId } = useParams<{ saleId: string }>();
@@ -31,7 +37,13 @@ export default function SaleReceiptPage() {
     URL.revokeObjectURL(url);
   }
 
-  if (receipt.isLoading) return <PageFrame>Fiş yükleniyor…</PageFrame>;
+  if (receipt.isLoading) {
+    return (
+      <PageFrame>
+        <p className="text-sm text-[#5a7380]">Fiş yükleniyor…</p>
+      </PageFrame>
+    );
+  }
   if (receipt.isError || !receipt.data) {
     return (
       <PageFrame>
@@ -43,25 +55,51 @@ export default function SaleReceiptPage() {
   }
 
   return (
-    <PageFrame width="lg">
-      <PageHeader
-        title={receipt.data.receiptNo}
-        description="Dahili satış fişi. Resmi e-belge değildir."
-        actions={
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={downloadReceipt}>
-              İndir
-            </Button>
-            <Button type="button" onClick={printReceipt}>
-              Yazdır
-            </Button>
-          </div>
-        }
+    <PageFrame width="lg" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
       />
+
+      <Link
+        href={`/settings/sales/${saleId}`}
+        className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3d6b7a] hover:text-[#2f5563]"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Satışa dön
+      </Link>
+
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Dahili fiş
+          </p>
+          <h1
+            className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+            style={displayFont}
+          >
+            {receipt.data.receiptNo}
+          </h1>
+          <p className="mt-2 max-w-2xl text-[15px] leading-6 text-[#5a7380]">
+            Dahili satış fişi. Resmi e-belge değildir.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button type="button" className={btnOutline} onClick={downloadReceipt}>
+            <Download className="h-4 w-4" />
+            İndir
+          </button>
+          <button type="button" className={btnPrimary} onClick={printReceipt}>
+            <Printer className="h-4 w-4" />
+            Yazdır
+          </button>
+        </div>
+      </div>
+
       <iframe
         title={receipt.data.receiptNo}
         srcDoc={receipt.data.html}
-        className="mt-6 min-h-[640px] w-full rounded-xl border border-zinc-200 bg-white"
+        className="mt-8 min-h-[640px] w-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#c5dde6]/70"
       />
     </PageFrame>
   );

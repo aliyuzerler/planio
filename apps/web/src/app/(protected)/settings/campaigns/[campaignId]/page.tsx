@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@xenior/ui";
+import { ArrowLeft, MessageSquare, Pencil } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageFrame } from "@/components/ui/page-frame";
 import { useToast } from "@/components/ui/toast";
@@ -16,6 +16,12 @@ import {
   useCanManageCampaigns,
 } from "@/lib/campaigns/campaign-queries";
 import { useServiceList } from "@/lib/services/service-queries";
+
+const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
+const btnPrimary =
+  "inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60";
+const btnOutline =
+  "inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#2f5563] ring-1 ring-[#c5dde6] transition hover:bg-[#eef6f8] disabled:opacity-60";
 
 export default function CampaignDetailPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
@@ -66,14 +72,14 @@ export default function CampaignDetailPage() {
   if (campaign.isLoading) {
     return (
       <PageFrame>
-        <p className="text-sm text-zinc-600">Kampanya yükleniyor…</p>
+        <p className="text-sm text-[#5a7380]">Kampanya yükleniyor…</p>
       </PageFrame>
     );
   }
   if (!campaign.data) {
     return (
       <PageFrame>
-        <p className="text-sm text-zinc-600">Kampanya bulunamadı.</p>
+        <p className="text-sm text-[#5a7380]">Kampanya bulunamadı.</p>
       </PageFrame>
     );
   }
@@ -84,71 +90,120 @@ export default function CampaignDetailPage() {
     .map((service) => service.name);
 
   return (
-    <PageFrame width="sm">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <PageFrame width="md" className="relative">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-[#eef6f8] to-transparent"
+      />
+
+      <Link
+        href="/settings/campaigns"
+        className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3d6b7a] hover:text-[#2f5563]"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Kampanya listesine dön
+      </Link>
+
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">{item.name}</h1>
-          <p className="mt-1 text-sm text-zinc-600">
-            {item.isActive ? "Aktif kampanya" : "Pasif kampanya"}
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Kampanya kartı
           </p>
+          <h1
+            className="mt-1 text-3xl font-semibold tracking-tight text-[#2f5563]"
+            style={displayFont}
+          >
+            {item.name}
+          </h1>
+          <div className="mt-2">
+            <span
+              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                item.isActive
+                  ? "bg-[#b8e6df]/45 text-[#2f5563]"
+                  : "bg-[#e4f0f4] text-[#5a7380]"
+              }`}
+            >
+              {item.isActive ? "Aktif kampanya" : "Pasif kampanya"}
+            </span>
+          </div>
         </div>
         {canManage ? (
-          <div className="flex gap-2">
-            <Button asChild variant="outline">
-              <Link href={`/settings/campaigns/${campaignId}/edit`}>Düzenle</Link>
-            </Button>
-            <Button
-              variant="outline"
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/settings/campaigns/${campaignId}/edit`}
+              className={btnOutline}
+            >
+              <Pencil className="h-4 w-4" />
+              Düzenle
+            </Link>
+            <button
+              type="button"
+              className={btnOutline}
+              disabled={broadcasting || !item.smsTemplate}
+              onClick={() => void sendBroadcast()}
+            >
+              <MessageSquare className="h-4 w-4" />
+              {broadcasting ? "Gönderiliyor…" : "Toplu SMS"}
+            </button>
+            <button
+              type="button"
+              className={btnPrimary}
               disabled={saving}
               onClick={() => setConfirm(true)}
             >
               {item.isActive ? "Pasifleştir" : "Aktifleştir"}
-            </Button>
-            <Button
-              variant="outline"
-              disabled={broadcasting || !item.smsTemplate}
-              onClick={() => void sendBroadcast()}
-            >
-              {broadcasting ? "Gönderiliyor…" : "Toplu SMS"}
-            </Button>
+            </button>
           </div>
         ) : null}
       </div>
-      <dl className="mt-6 grid gap-4 rounded-xl border border-zinc-200 p-6 sm:grid-cols-2">
+
+      <dl className="mt-6 grid gap-4 overflow-hidden rounded-2xl bg-white p-5 shadow-sm ring-1 ring-[#c5dde6]/70 sm:grid-cols-2 sm:p-6">
         <div>
-          <dt className="text-xs uppercase text-zinc-500">İndirim</dt>
-          <dd className="mt-1 text-sm">
+          <dt className="text-[11px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            İndirim
+          </dt>
+          <dd className="mt-1 text-sm text-[#1e3340]">
             {item.discountType === "PERCENT"
               ? `%${item.discountValue}`
               : `${item.discountValue} TRY`}
           </dd>
         </div>
         <div>
-          <dt className="text-xs uppercase text-zinc-500">Tarih</dt>
-          <dd className="mt-1 text-sm">
+          <dt className="text-[11px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Tarih
+          </dt>
+          <dd className="mt-1 text-sm text-[#1e3340]">
             {new Date(item.startsAt).toLocaleString("tr-TR")} –{" "}
             {new Date(item.endsAt).toLocaleString("tr-TR")}
           </dd>
         </div>
         <div className="sm:col-span-2">
-          <dt className="text-xs uppercase text-zinc-500">Hizmetler</dt>
-          <dd className="mt-1 text-sm">
+          <dt className="text-[11px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            Hizmetler
+          </dt>
+          <dd className="mt-1 text-sm text-[#1e3340]">
             {item.serviceIds.length === 0
               ? "Tüm hizmetler"
               : names.join(", ") || `${item.serviceIds.length} hizmet`}
           </dd>
         </div>
         <div className="sm:col-span-2">
-          <dt className="text-xs uppercase text-zinc-500">SMS şablonu</dt>
-          <dd className="mt-1 text-sm">{item.smsTemplate || "—"}</dd>
+          <dt className="text-[11px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
+            SMS şablonu
+          </dt>
+          <dd className="mt-1 text-sm text-[#1e3340]">
+            {item.smsTemplate || "—"}
+          </dd>
         </div>
       </dl>
+
       {canManage ? (
-        <p className="mt-3 text-xs text-zinc-600">
-          Toplu SMS yalnızca SMS rızası ve telefonu olan müşterilere gider. ACCOUNTANT
-          gönderemez.
+        <p className="mt-4 text-[13px] text-[#5a7380]">
+          Toplu SMS yalnızca SMS rızası ve telefonu olan müşterilere gider.
+          ACCOUNTANT gönderemez.
         </p>
       ) : null}
+
       <ConfirmDialog
         open={confirm}
         title={item.isActive ? "Kampanyayı pasifleştir" : "Kampanyayı aktifleştir"}

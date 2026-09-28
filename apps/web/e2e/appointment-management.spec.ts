@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { mockSubscriptionAccess } from "./helpers/subscription-access";
 
 const businessId = "61111111-1111-4111-8111-111111111111";
 const appointmentId = "62222222-2222-4222-8222-222222222222";
@@ -39,6 +40,7 @@ const appointment = {
   customer: { id: customerId, firstName: "Ada", lastName: "Lovelace" },
   staff: { id: staffId, firstName: "Stylist", lastName: "One" },
   service: { id: serviceId, name: "Hair Cut" },
+  resource: null,
   startAt: "2033-01-15T10:00:00.000Z",
   endAt: "2033-01-15T11:00:00.000Z",
   status: "CONFIRMED",
@@ -52,6 +54,12 @@ const appointment = {
   campaignId: null,
   campaignNameSnapshot: null,
   currency: "TRY",
+  paymentPlan: "ON_DAY",
+  depositAmount: null,
+  paymentStatus: "UNPAID",
+  collectedAmount: "0.00",
+  remainingAmount: "250.00",
+  saleId: null,
   createdAt: now,
   updatedAt: now,
   events: [
@@ -114,6 +122,7 @@ async function mockCatalog(page: Page) {
           phone: null,
           email: null,
           notes: null,
+          loginRole: "STAFF",
           isActive: true,
           specializations: [],
           createdAt: now,
@@ -126,6 +135,7 @@ async function mockCatalog(page: Page) {
           phone: null,
           email: null,
           notes: null,
+          loginRole: "STAFF",
           isActive: true,
           specializations: [],
           createdAt: now,
@@ -165,6 +175,10 @@ async function mockCatalog(page: Page) {
           email: null,
           birthDate: null,
           notes: null,
+          smsConsent: true,
+          whatsappConsent: true,
+          emailConsent: true,
+          ledgerBalance: "0.00",
           isActive: true,
           createdAt: now,
           updatedAt: now,
@@ -186,9 +200,13 @@ async function mockCatalog(page: Page) {
       },
     });
   });
+  // Appointment detail loads related sales; live API 401s log the suite out mid-dialog.
+  await page.route("**/api/v1/sales**", (route) =>
+    route.fulfill({ json: pageJson([]) }),
+  );
 }
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
     {
       name: "xenior.refresh",
@@ -198,6 +216,7 @@ test.beforeEach(async ({ context }) => {
       sameSite: "Lax",
     },
   ]);
+  await mockSubscriptionAccess(page);
 });
 
 test("owner lists and creates a tenant-scoped appointment", async ({
@@ -390,7 +409,7 @@ test("calendar month view drag-and-drop reschedules through the API", async ({
   });
 
   await page.goto("/settings/appointments");
-  await page.getByRole("button", { name: "Ay" }).click();
+  await page.getByRole("button", { name: "Ay", exact: true }).click();
   await page.getByLabel("Tarih").fill("2033-01-15");
   await expect(
     page.getByRole("link", { name: "Ada Lovelace randevusu" }),

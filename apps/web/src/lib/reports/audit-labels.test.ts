@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   auditActionLabel,
   auditEntityLabel,
+  formatAuditDetail,
   formatAuditEntity,
 } from "./audit-labels";
 
@@ -23,12 +24,19 @@ describe("audit labels", () => {
     expect(auditEntityLabel("LedgerEntry")).toBe("Ledger entry");
   });
 
-  it("formats entity column with short reference", () => {
+  it("prefers human summary and never shows ref codes", () => {
+    expect(
+      formatAuditDetail(
+        "SalesReceipt",
+        "FIS-2026-00012 · Ayşe Yılmaz · Saç kesimi · 450.00 TRY",
+      ),
+    ).toBe("FIS-2026-00012 · Ayşe Yılmaz · Saç kesimi · 450.00 TRY");
+    expect(formatAuditDetail("Sale", null)).toBe("Satış");
     expect(
       formatAuditEntity(
         "Appointment",
         "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       ),
-    ).toBe("Randevu · ref a1b2c3d4");
+    ).toBe("Randevu");
   });
 });

@@ -3,6 +3,7 @@ import type {
   CreateStaffInput,
   SpecializationProfile,
   StaffHoursSettings,
+  StaffLoginRole,
   StaffProfile,
   UpdateSpecializationInput,
   UpdateStaffHoursInput,
@@ -22,6 +23,7 @@ import { apiRequest } from "@/lib/api/client";
 
 export interface StaffFilters {
   isActive?: boolean;
+  loginRole?: StaffLoginRole;
   q?: string;
 }
 
@@ -32,6 +34,7 @@ export async function listStaff(
   if (filters.isActive !== undefined) {
     params.set("isActive", String(filters.isActive));
   }
+  if (filters.loginRole) params.set("loginRole", filters.loginRole);
   if (filters.q) params.set("q", filters.q);
   const suffix = params.size ? `?${params.toString()}` : "";
   const response = await apiRequest<unknown>(`/staff${suffix}`);

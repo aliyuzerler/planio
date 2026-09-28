@@ -19,6 +19,7 @@ import { JwtAuthGuard } from "../src/common/guards/jwt-auth.guard";
 import { CustomersModule } from "../src/customers/customers.module";
 import { PrismaModule } from "../src/infrastructure/prisma/prisma.module";
 import { PrismaService } from "../src/infrastructure/prisma/prisma.service";
+import { cleanupTenantFixtures } from "./cleanup";
 import { NotificationsModule } from "../src/notifications/notifications.module";
 import { PaymentsModule } from "../src/payments/payments.module";
 import { ServicesModule } from "../src/services/services.module";
@@ -98,7 +99,7 @@ describe("Cross-tenant isolation (e2e)", () => {
         .post("/api/v1/staff")
         .set("Authorization", `Bearer ${tokenA}`)
         .set(TENANT_HEADER, businessAId)
-        .send({ firstName: "Stylist", lastName: "A" })
+        .send({ loginRole: "STAFF", firstName: "Stylist", lastName: "A" })
         .expect(201)
     ).body.id as string;
     serviceAId = (
@@ -174,29 +175,11 @@ describe("Cross-tenant isolation (e2e)", () => {
       where: { email: { in: Object.values(emails) } },
       select: { id: true },
     });
-    const userIds = users.map((user) => user.id);
-    const businessIds = [businessAId, businessBId].filter(Boolean);
-    await prisma.notification.deleteMany({ where: { businessId: { in: businessIds } } });
-    await prisma.notificationSettings.deleteMany({
-      where: { businessId: { in: businessIds } },
-    });
-    await prisma.pushDevice.deleteMany({ where: { businessId: { in: businessIds } } });
-    await prisma.appointmentEvent.deleteMany({
-      where: { businessId: { in: businessIds } },
-    });
-    await prisma.appointment.deleteMany({ where: { businessId: { in: businessIds } } });
-    await prisma.payment.deleteMany({ where: { businessId: { in: businessIds } } });
-    await prisma.subscription.deleteMany({
-      where: { businessId: { in: businessIds } },
-    });
-    await prisma.customer.deleteMany({ where: { businessId: { in: businessIds } } });
-    await prisma.staff.deleteMany({ where: { businessId: { in: businessIds } } });
-    await prisma.auditLog.deleteMany({ where: { businessId: { in: businessIds } } });
-    await prisma.service.deleteMany({ where: { businessId: { in: businessIds } } });
-    await prisma.refreshToken.deleteMany({ where: { userId: { in: userIds } } });
-    await prisma.businessUser.deleteMany({ where: { userId: { in: userIds } } });
-    await prisma.business.deleteMany({ where: { id: { in: businessIds } } });
-    await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+    await cleanupTenantFixtures(
+      prisma,
+      [businessAId, businessBId].filter(Boolean),
+      users.map((user) => user.id),
+    );
     await app.close();
   });
 
@@ -238,7 +221,8 @@ describe("Cross-tenant isolation (e2e)", () => {
       .set("Authorization", `Bearer ${tokenB}`)
       .set(TENANT_HEADER, businessBId)
       .expect(200);
-    expect(other.body).toBeNull();
+    expect(other.body.status).toBe("TRIALING");
+    expect(other.body.businessId).toBe(businessBId);
 
     await request(app.getHttpServer())
       .get("/api/v1/subscriptions/current")

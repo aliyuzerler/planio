@@ -12,6 +12,7 @@ export class MailService {
     destination: string;
     subject: string;
     body: string;
+    html?: string;
   }): Promise<void> {
     const provider = input.businessId
       ? await this.resolver.resolve(input.businessId, "EMAIL")
@@ -24,6 +25,7 @@ export class MailService {
         destination: input.destination,
         subject: input.subject,
         body: input.body,
+        html: input.html,
       });
     } catch (error) {
       this.logger.warn(
@@ -40,6 +42,7 @@ export class MailService {
     destination: string;
     subject: string;
     body: string;
+    html?: string;
   }): Promise<void> {
     try {
       await this.sendTransactional(input);
