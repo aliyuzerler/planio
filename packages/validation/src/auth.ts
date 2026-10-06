@@ -46,12 +46,18 @@ export const verifyEmailInputSchema = z.object({
   token: z.string().trim().min(16).max(256),
 });
 
-export const acceptStaffInviteInputSchema = z.object({
-  token: z.string().trim().min(16).max(256),
-  password: passwordSchema,
-  firstName: nameSchema.optional(),
-  lastName: nameSchema.optional(),
-});
+export const acceptStaffInviteInputSchema = z
+  .object({
+    token: z.string().trim().min(16).max(256),
+    // Yeni hesap için yeni parola; mevcut hesapta isteğe bağlı (API'de iş kuralı).
+    password: passwordSchema.optional(),
+    currentPassword: z.string().min(1).max(128).optional(),
+    firstName: nameSchema.optional(),
+    lastName: nameSchema.optional(),
+  })
+  .refine((value) => value.password !== undefined || value.currentPassword !== undefined, {
+    message: "Yeni bir parola veya mevcut parolanızdan biri gereklidir.",
+  });
 
 export const refreshTokenInputSchema = z.object({
   refreshToken: z.string().min(32).max(256),

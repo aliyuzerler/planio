@@ -49,6 +49,9 @@ const ERROR_MESSAGES_TR: Record<string, string> = {
   INVALID_AUTH_TOKEN: "Oturum geçersiz veya süresi dolmuş.",
   MEMBERSHIP_EXISTS: "Bu üyelik zaten mevcut.",
   INVALID_STAFF_INVITE: "Personel daveti geçersiz.",
+  CURRENT_PASSWORD_REQUIRED:
+    "Bu e-posta ile zaten bir hesabınız var. Mevcut parolanızı girin.",
+  PASSWORD_REQUIRED: "Yeni hesap için bir parola belirlemelisiniz.",
   APPOINTMENT_OVERLAP: "Personelin bu saatlerde çakışan randevusu var.",
   RESOURCE_OVERLAP: "Kaynağın bu saatlerde çakışan randevusu var.",
   OUTSIDE_BUSINESS_HOURS: "Randevu işletme çalışma saatleri dışında.",

@@ -79,7 +79,10 @@ export interface VerifyEmailInput {
 
 export interface AcceptStaffInviteInput {
   token: string;
-  password: string;
+  /** Yeni hesap oluşturulurken zorunlu; mevcut hesapta göz ardı edilir. */
+  password?: string;
+  /** Davet e-postası mevcut bir hesaba aitse o hesabın mevcut parolası. */
+  currentPassword?: string;
   firstName?: string;
   lastName?: string;
 }

@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import type { Prisma, User } from "@prisma/client";
 import type { ApiEnv } from "@xenior/config";
 import type {
   AuthSessionResponse,
@@ -247,7 +248,10 @@ export class AuthService {
   }
 
   async acceptStaffInvite(input: AcceptStaffInviteDto): Promise<AuthSessionResponse> {
-    const token = await this.consumeToken("STAFF_INVITE", input.token);
+    // Token tüketilmeden önce doğrulamalar yapılır: yanlış parola denemesi
+    // daveti yakmasın. Tüketim, işlem (transaction) içinde atomik olarak
+    // claimToken ile yapılır; hata olursa geri alınır.
+    const token = await this.findValidToken("STAFF_INVITE", input.token);
     const metadata = (token.metadata ?? {}) as {
       staffId?: string;
       role?: string;
@@ -266,7 +270,7 @@ export class AuthService {
     if (!staffId) {
       // Legacy accountant invites without a staff profile.
       if (metadata.role === "ACCOUNTANT") {
-        return this.acceptAccountantInvite(token.email, businessId, input, metadata);
+        return this.acceptAccountantInvite(token, input, metadata);
       }
       throw new BadRequestException({
         message: "Invite token is invalid.",
@@ -274,10 +278,11 @@ export class AuthService {
       });
     }
 
-    const passwordHash = await this.passwords.hash(input.password);
     const email = this.normalizeEmail(token.email);
 
     return this.prisma.$transaction(async (transaction) => {
+      await this.claimToken(transaction, token.id);
+
       const staff = await transaction.staff.findFirst({
         where: { id: staffId, businessId },
       });
@@ -291,23 +296,12 @@ export class AuthService {
       const role =
         staff.loginRole === "ACCOUNTANT" ? "ACCOUNTANT" : "STAFF";
 
-      let user = await transaction.user.findUnique({ where: { email } });
-      if (!user) {
-        user = await transaction.user.create({
-          data: {
-            email,
-            passwordHash,
-            firstName: input.firstName?.trim() || staff.firstName,
-            lastName: input.lastName?.trim() || staff.lastName,
-            emailVerifiedAt: new Date(),
-          },
-        });
-      } else {
-        await transaction.user.update({
-          where: { id: user.id },
-          data: { passwordHash, emailVerifiedAt: new Date() },
-        });
-      }
+      // Mevcut hesabın parolası davetle üzerine yazılamaz: e-posta kayıtlıysa
+      // mevcut parolanın doğrulanması gerekir (hesap ele geçirmeyi önler).
+      const user = await this.resolveInvitedUser(transaction, email, input, {
+        firstName: staff.firstName,
+        lastName: staff.lastName,
+      });
 
       const existing = await transaction.businessUser.findUnique({
         where: { businessId_userId: { businessId, userId: user.id } },
@@ -344,37 +338,85 @@ export class AuthService {
     });
   }
 
+  /**
+   * Davet edilen e-posta için kullanıcıyı çözer. Hesap yoksa yeni hesap
+   * oluşturulur (password zorunlu). Hesap varsa mevcut parola doğrulanır ve
+   * parola/e-posta doğrulama durumu değiştirilmez — davet linki ele geçen
+   * biri mevcut hesabın parolasını değiştiremesin diye.
+   */
+  private async resolveInvitedUser(
+    transaction: Prisma.TransactionClient,
+    email: string,
+    input: AcceptStaffInviteDto,
+    defaults: { firstName?: string | null; lastName?: string | null },
+  ): Promise<User> {
+    const existing = await transaction.user.findUnique({ where: { email } });
+    if (existing) {
+      if (!input.currentPassword) {
+        throw new BadRequestException({
+          message:
+            "This email already has an account. Sign in with your current password to accept the invite.",
+          code: "CURRENT_PASSWORD_REQUIRED",
+        });
+      }
+      // verifyOrDummy: parola hash'i olmayan hesaplarda da sabit süreli
+      // doğrulama yapar (zamanlama sızıntısı olmasın).
+      const valid = await this.passwords.verifyOrDummy(
+        existing.passwordHash,
+        input.currentPassword,
+      );
+      if (!valid) {
+        throw new UnauthorizedException({
+          message: "Current password is incorrect.",
+          code: "INVALID_CREDENTIALS",
+        });
+      }
+      return existing;
+    }
+
+    if (!input.password) {
+      throw new BadRequestException({
+        message: "Password is required to create an account.",
+        code: "PASSWORD_REQUIRED",
+      });
+    }
+    const passwordHash = await this.passwords.hash(input.password);
+    return transaction.user.create({
+      data: {
+        email,
+        passwordHash,
+        firstName: input.firstName?.trim() || defaults.firstName || undefined,
+        lastName: input.lastName?.trim() || defaults.lastName || undefined,
+        emailVerifiedAt: new Date(),
+      },
+    });
+  }
+
   private async acceptAccountantInvite(
-    tokenEmail: string,
-    businessId: string,
+    token: { id: string; email: string; businessId: string | null },
     input: AcceptStaffInviteDto,
     metadata: { firstName?: string; lastName?: string },
   ): Promise<AuthSessionResponse> {
-    const passwordHash = await this.passwords.hash(input.password);
-    const email = this.normalizeEmail(tokenEmail);
+    const businessId = token.businessId;
+    if (!businessId) {
+      throw new BadRequestException({
+        message: "Invite token is invalid.",
+        code: "INVALID_AUTH_TOKEN",
+      });
+    }
+    const email = this.normalizeEmail(token.email);
     const firstName =
       input.firstName?.trim() || metadata.firstName?.trim() || "Muhasebe";
     const lastName =
       input.lastName?.trim() || metadata.lastName?.trim() || "Kullanıcı";
 
     return this.prisma.$transaction(async (transaction) => {
-      let user = await transaction.user.findUnique({ where: { email } });
-      if (!user) {
-        user = await transaction.user.create({
-          data: {
-            email,
-            passwordHash,
-            firstName,
-            lastName,
-            emailVerifiedAt: new Date(),
-          },
-        });
-      } else {
-        await transaction.user.update({
-          where: { id: user.id },
-          data: { passwordHash, emailVerifiedAt: new Date() },
-        });
-      }
+      await this.claimToken(transaction, token.id);
+
+      const user = await this.resolveInvitedUser(transaction, email, input, {
+        firstName,
+        lastName,
+      });
 
       const existing = await transaction.businessUser.findUnique({
         where: { businessId_userId: { businessId, userId: user.id } },
@@ -513,7 +555,8 @@ export class AuthService {
     });
   }
 
-  private async consumeToken(
+  /** Token'ı tüketmeden doğrulayıp döndürür (davet ön kontrolleri için). */
+  private async findValidToken(
     purpose: "EMAIL_VERIFICATION" | "PASSWORD_RESET" | "STAFF_INVITE",
     rawToken: string,
   ) {
@@ -531,10 +574,40 @@ export class AuthService {
         code: "INVALID_AUTH_TOKEN",
       });
     }
-    await this.prisma.authToken.update({
-      where: { id: token.id },
+    return token;
+  }
+
+  /**
+   * Token'ı koşullu updateMany ile atomik olarak tüketir. Eşzamanlı ikinci
+   * istek koşuldan geçemeyeceği için tek kullanımlık garanti edilir; hata
+   * durumunda dış transaction geri alındığında tüketim de geri alınır.
+   */
+  private async claimToken(
+    transaction: Prisma.TransactionClient,
+    tokenId: string,
+  ): Promise<void> {
+    const claimed = await transaction.authToken.updateMany({
+      where: {
+        id: tokenId,
+        consumedAt: null,
+        expiresAt: { gt: new Date() },
+      },
       data: { consumedAt: new Date() },
     });
+    if (claimed.count === 0) {
+      throw new BadRequestException({
+        message: "This link is invalid or has expired.",
+        code: "INVALID_AUTH_TOKEN",
+      });
+    }
+  }
+
+  private async consumeToken(
+    purpose: "EMAIL_VERIFICATION" | "PASSWORD_RESET" | "STAFF_INVITE",
+    rawToken: string,
+  ) {
+    const token = await this.findValidToken(purpose, rawToken);
+    await this.claimToken(this.prisma, token.id);
     return token;
   }
 }

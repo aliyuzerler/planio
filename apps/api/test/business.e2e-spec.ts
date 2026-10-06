@@ -255,6 +255,75 @@ describe("Business management (e2e)", () => {
     expect(denied.body.code).toBe("INSUFFICIENT_BUSINESS_ROLE");
   });
 
+  it("does not let an invite overwrite an existing account's password", async () => {
+    // Business B sahibini Business A'ya muhasebeci olarak davet et: davet
+    // linki ele geçse bile hesabın parolası değiştirilememeli.
+    await request(app.getHttpServer())
+      .post("/api/v1/business/accountant-invites")
+      .set("Authorization", `Bearer ${tokenA}`)
+      .set(TENANT_HEADER, businessAId)
+      .send({ email: emails.businessB, firstName: "B", lastName: "Sahibi" })
+      .expect(200);
+
+    const invite = await prisma.authToken.findFirstOrThrow({
+      where: {
+        businessId: businessAId,
+        email: emails.businessB,
+        purpose: "STAFF_INVITE",
+      },
+    });
+    const { createAuthTokenValue, hashAuthToken } = await import(
+      "../src/auth/auth-token"
+    );
+    const raw = createAuthTokenValue();
+    await prisma.authToken.update({
+      where: { id: invite.id },
+      data: { tokenHash: hashAuthToken(raw) },
+    });
+
+    // Mevcut parola gönderilmeden kabul edilemez (yeni parola verilse bile).
+    const missing = await request(app.getHttpServer())
+      .post("/api/v1/auth/accept-invite")
+      .send({ token: raw, password: "AttackerChosen!123" })
+      .expect(400);
+    expect(missing.body.code).toBe("CURRENT_PASSWORD_REQUIRED");
+
+    // Yanlış mevcut parola reddedilir ve davet token'ı yakılmaz.
+    const wrong = await request(app.getHttpServer())
+      .post("/api/v1/auth/accept-invite")
+      .send({ token: raw, currentPassword: "WrongPassword!123" })
+      .expect(401);
+    expect(wrong.body.code).toBe("INVALID_CREDENTIALS");
+
+    // Saldırganın seçtiği parolayla giriş yapılamaz, orijinaliyle yapılır.
+    await request(app.getHttpServer())
+      .post("/api/v1/auth/login")
+      .send({ email: emails.businessB, password: "AttackerChosen!123" })
+      .expect(401);
+    await request(app.getHttpServer())
+      .post("/api/v1/auth/login")
+      .send({ email: emails.businessB, password })
+      .expect(200);
+
+    // Doğru mevcut parola ile davet kabul edilir; parola yine değişmez.
+    const accepted = await request(app.getHttpServer())
+      .post("/api/v1/auth/accept-invite")
+      .send({ token: raw, currentPassword: password })
+      .expect(200);
+    expect(accepted.body.user.email).toBe(emails.businessB);
+
+    await request(app.getHttpServer())
+      .post("/api/v1/auth/login")
+      .send({ email: emails.businessB, password })
+      .expect(200);
+
+    // Kullanılmış token ikinci kez kabul edilmez.
+    await request(app.getHttpServer())
+      .post("/api/v1/auth/accept-invite")
+      .send({ token: raw, currentPassword: password })
+      .expect(400);
+  });
+
   it.each([
     ["invalid email", { email: "not-an-email" }],
     ["invalid phone", { phone: "123" }],

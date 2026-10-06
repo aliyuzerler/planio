@@ -42,11 +42,24 @@ export class AcceptStaffInviteDto {
   @MaxLength(256)
   token!: string;
 
-  @ApiProperty()
+  /**
+   * Yeni hesap oluşturulurken zorunlu (>=12 karakter). E-posta adresi zaten
+   * kayıtlıysa göz ardı edilir; bu durumda currentPassword zorunludur.
+   */
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   @MinLength(12)
   @MaxLength(128)
-  password!: string;
+  password?: string;
+
+  /** Davet e-postası mevcut bir hesaba aitse o hesabın mevcut parolası. */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(128)
+  currentPassword?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -213,6 +213,8 @@ describe("Multi-tenant authorization (e2e)", () => {
         firstName: "Super",
         lastName: "Admin",
         platformRole: "SUPER_ADMIN",
+        // Giriş akışı e-posta doğrulaması olmadan oturum açtırmaz.
+        emailVerifiedAt: new Date(),
       },
     });
     superAdminToken = (
