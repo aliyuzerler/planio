@@ -1,11 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { ArrowRight, CalendarPlus } from "lucide-react";
-import { AppointmentCalendar } from "@/app/(protected)/settings/_components/appointment-calendar";
 import { PageFrame } from "@/components/ui/page-frame";
 import { useSubscriptionAccess } from "@/lib/subscriptions/subscription-queries";
 import { usePageTitle } from "@/lib/use-page-title";
+
+// 800+ satırlık sürükle-bırak takvimi yalnızca bu sayfada kullanılır; ilk
+// yükleme JS'inden çıkarılır (code-split).
+const AppointmentCalendar = dynamic(
+  () =>
+    import(
+      "@/app/(protected)/settings/_components/appointment-calendar"
+    ).then((mod) => mod.AppointmentCalendar),
+  {
+    loading: () => (
+      <p className="rounded-2xl bg-white p-6 text-sm text-[#5a7380] ring-1 ring-[#c5dde6]/70">
+        Takvim yükleniyor…
+      </p>
+    ),
+  },
+);
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 

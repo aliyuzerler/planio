@@ -30,6 +30,7 @@ export default function CustomerDetailPage() {
   const canManage = useCanManageCustomers();
   const canReadCash = useCanReadCash();
   const ledger = useLedgerEntries(customerId, canReadCash);
+  const ledgerEntries = ledger.data?.pages.flatMap((page) => page.items) ?? [];
   const role = useAuthStore((state) =>
     state.memberships.find((item) => item.businessId === state.selectedBusinessId)
       ?.role,
@@ -209,9 +210,9 @@ export default function CustomerDetailPage() {
             </h2>
           </div>
           <div className="px-2 py-2 sm:px-3">
-            {ledger.data?.items.length ? (
+            {ledgerEntries.length ? (
               <ul className="divide-y divide-[#e4f0f4]">
-                {ledger.data.items.map((entry) => (
+                {ledgerEntries.map((entry) => (
                   <li
                     key={entry.id}
                     className="flex flex-wrap items-center justify-between gap-2 px-3 py-3 text-[13px]"

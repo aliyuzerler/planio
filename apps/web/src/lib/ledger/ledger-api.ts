@@ -58,17 +58,20 @@ export async function updateCashAccount(
   );
 }
 
-export async function listSales(filters: {
-  customerId?: string;
-  appointmentId?: string;
-  status?: "OPEN" | "SETTLED";
-}): Promise<PaginatedResponse<SaleRecord>> {
+export async function listSales(
+  filters: {
+    customerId?: string;
+    appointmentId?: string;
+    status?: "OPEN" | "SETTLED";
+    page?: number;
+  } = {},
+): Promise<PaginatedResponse<SaleRecord>> {
   const params = new URLSearchParams();
   if (filters.customerId) params.set("customerId", filters.customerId);
   if (filters.appointmentId) params.set("appointmentId", filters.appointmentId);
   if (filters.status) params.set("status", filters.status);
-  params.set("page", "1");
-  params.set("pageSize", "50");
+  params.set("page", String(filters.page ?? 1));
+  params.set("pageSize", "25");
   return paginatedSaleSchema.parse(
     await apiRequest<unknown>(`/sales?${params}`),
   );
@@ -113,9 +116,11 @@ export async function getSaleReceipt(id: string): Promise<SalesReceiptRecord> {
   );
 }
 
-export async function listExpenses(): Promise<PaginatedResponse<ExpenseRecord>> {
+export async function listExpenses(
+  page = 1,
+): Promise<PaginatedResponse<ExpenseRecord>> {
   return paginatedExpenseSchema.parse(
-    await apiRequest<unknown>("/expenses?page=1&pageSize=50"),
+    await apiRequest<unknown>(`/expenses?page=${page}&pageSize=25`),
   );
 }
 
@@ -132,16 +137,43 @@ export async function createExpense(
 
 export async function listLedgerEntries(
   customerId?: string,
+  page = 1,
 ): Promise<PaginatedResponse<LedgerEntryRecord>> {
-  const params = new URLSearchParams({ page: "1", pageSize: "50" });
+  const params = new URLSearchParams({ page: String(page), pageSize: "25" });
   if (customerId) params.set("customerId", customerId);
   return paginatedLedgerEntrySchema.parse(
     await apiRequest<unknown>(`/ledger/entries?${params}`),
   );
 }
 
-export async function listLedgerCustomers(): Promise<LedgerCustomerRecord[]> {
-  const response = await apiRequest<unknown>("/ledger/customers");
+/**
+ * Cari müşterleri sayfalı getirir. hasMore'u algılamak için istenen sayıdan
+ * bir fazlası istenir (API dizi döner; fazlaysa sonraki sayfa vardır).
+ */
+export async function listLedgerCustomers(filters: {
+  page?: number;
+  pageSize?: number;
+  q?: string;
+} = {}): Promise<{
+  items: LedgerCustomerRecord[];
+  hasMore: boolean;
+  page: number;
+}> {
+  const page = filters.page ?? 1;
+  const pageSize = filters.pageSize ?? 25;
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize + 1),
+  });
+  const search = filters.q?.trim();
+  if (search) params.set("q", search);
+  const response = await apiRequest<unknown>(`/ledger/customers?${params}`);
   if (!Array.isArray(response)) throw new Error("Invalid ledger customers response.");
-  return response.map((item) => ledgerCustomerRecordSchema.parse(item));
+  const parsed = response.map((item) => ledgerCustomerRecordSchema.parse(item));
+  const hasMore = parsed.length > pageSize;
+  return {
+    items: hasMore ? parsed.slice(0, pageSize) : parsed,
+    hasMore,
+    page,
+  };
 }

@@ -14,6 +14,7 @@ export default function SalesPage() {
   usePageTitle("Satışlar");
   const sales = useSaleList();
   const canWrite = useCanWriteCash();
+  const saleItems = sales.data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
     <PageFrame width="lg" className="relative">
@@ -56,49 +57,59 @@ export default function SalesPage() {
             isLoading={sales.isLoading}
             isError={sales.isError}
             onRetry={() => sales.refetch()}
-            isEmpty={sales.data?.items.length === 0}
+            isEmpty={saleItems.length === 0}
             loading="Satışlar yükleniyor…"
             error="Satışlar yüklenemedi."
             empty="Henüz satış yok. Randevu tamamlayın veya tezgah satışı oluşturun."
           >
-            {sales.data ? (
-              <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
-                {sales.data.items.map((sale) => (
-                  <li key={sale.id}>
-                    <Link
-                      href={`/settings/sales/${sale.id}`}
-                      className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 transition hover:bg-[#eef6f8]"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-[15px] font-semibold text-[#1e3340]">
-                          {sale.customer.firstName} {sale.customer.lastName}
-                        </p>
-                        <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
-                          {sale.lines[0]?.nameSnapshot ?? "Hizmet"} ·{" "}
-                          {sale.totalAmount} {sale.currency}
-                          {sale.remainingAmount !== "0.00"
-                            ? ` · kalan ${sale.remainingAmount}`
-                            : ""}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            sale.status === "OPEN"
-                              ? "bg-[#fff8eb] text-[#8a6a2f]"
-                              : "bg-[#b8e6df]/45 text-[#2f5563]"
-                          }`}
-                        >
-                          {STATUS_LABEL[sale.status]}
-                        </span>
-                        <ArrowRight className="h-4 w-4 text-[#7eb8c8]" />
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+            <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+              {saleItems.map((sale) => (
+                <li key={sale.id}>
+                  <Link
+                    href={`/settings/sales/${sale.id}`}
+                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 transition hover:bg-[#eef6f8]"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                        {sale.customer.firstName} {sale.customer.lastName}
+                      </p>
+                      <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
+                        {sale.lines[0]?.nameSnapshot ?? "Hizmet"} ·{" "}
+                        {sale.totalAmount} {sale.currency}
+                        {sale.remainingAmount !== "0.00"
+                          ? ` · kalan ${sale.remainingAmount}`
+                          : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          sale.status === "OPEN"
+                            ? "bg-[#fff8eb] text-[#8a6a2f]"
+                            : "bg-[#b8e6df]/45 text-[#2f5563]"
+                        }`}
+                      >
+                        {STATUS_LABEL[sale.status]}
+                      </span>
+                      <ArrowRight className="h-4 w-4 text-[#7eb8c8]" />
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </QueryState>
+          {sales.hasNextPage ? (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => sales.fetchNextPage()}
+                disabled={sales.isFetchingNextPage}
+                className="rounded-md border border-[#c5dde6] px-4 py-2 text-sm font-medium text-[#2f5563] transition hover:bg-[#eef6f8] disabled:opacity-50"
+              >
+                {sales.isFetchingNextPage ? "Yükleniyor…" : "Daha fazla göster"}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </PageFrame>

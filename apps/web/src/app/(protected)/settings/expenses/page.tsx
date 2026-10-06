@@ -19,6 +19,7 @@ const CATEGORY_LABEL = {
 export default function ExpensesPage() {
   const expenses = useExpenseList();
   const canWrite = useCanWriteCash();
+  const expenseItems = expenses.data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
     <PageFrame width="lg" className="relative">
@@ -60,35 +61,47 @@ export default function ExpensesPage() {
             isLoading={expenses.isLoading}
             isError={expenses.isError}
             onRetry={() => expenses.refetch()}
-            isEmpty={expenses.data?.items.length === 0}
+            isEmpty={expenseItems.length === 0}
             loading="Giderler yükleniyor…"
             error="Giderler yüklenemedi."
             empty="Henüz gider yok."
           >
-            {expenses.data ? (
-              <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
-                {expenses.data.items.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-[15px] font-semibold text-[#1e3340]">
-                        {CATEGORY_LABEL[item.category]}
-                      </p>
-                      <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
-                        {item.cashAccountName} ·{" "}
-                        {new Date(item.occurredAt).toLocaleString("tr-TR")}
-                      </p>
-                    </div>
-                    <p className="text-[15px] font-semibold text-[#2f5563]">
-                      {item.amount} {item.currency}
+            <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+              {expenseItems.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                      {CATEGORY_LABEL[item.category]}
                     </p>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+                    <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
+                      {item.cashAccountName} ·{" "}
+                      {new Date(item.occurredAt).toLocaleString("tr-TR")}
+                    </p>
+                  </div>
+                  <p className="text-[15px] font-semibold text-[#2f5563]">
+                    {item.amount} {item.currency}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </QueryState>
+          {expenses.hasNextPage ? (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => expenses.fetchNextPage()}
+                disabled={expenses.isFetchingNextPage}
+                className="rounded-md border border-[#c5dde6] px-4 py-2 text-sm font-medium text-[#2f5563] transition hover:bg-[#eef6f8] disabled:opacity-50"
+              >
+                {expenses.isFetchingNextPage
+                  ? "Yükleniyor…"
+                  : "Daha fazla göster"}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </PageFrame>

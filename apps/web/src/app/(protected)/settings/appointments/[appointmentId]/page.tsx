@@ -29,7 +29,8 @@ export default function AppointmentDetailPage() {
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const appointment = useAppointmentDetail(appointmentId);
-  const relatedSale = useSaleList({ appointmentId });
+  const relatedSale = useSaleList({ appointmentId })
+    .data?.pages.flatMap((page) => page.items)[0];
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
@@ -152,17 +153,17 @@ export default function AppointmentDetailPage() {
           <dt className="text-xs uppercase text-zinc-500">Notlar</dt>
           <dd className="mt-1 text-sm">{item.notes || "—"}</dd>
         </div>
-        {relatedSale.data?.items[0] ? (
+        {relatedSale ? (
           <div>
             <dt className="text-xs uppercase text-zinc-500">Satış</dt>
             <dd className="mt-1 text-sm">
               <Link
-                href={`/settings/sales/${relatedSale.data.items[0].id}`}
+                href={`/settings/sales/${relatedSale.id}`}
                 className="underline"
               >
-                {relatedSale.data.items[0].remainingAmount === "0.00"
+                {relatedSale.remainingAmount === "0.00"
                   ? "Tahsil edildi"
-                  : `Açık ${relatedSale.data.items[0].remainingAmount} ${relatedSale.data.items[0].currency}`}
+                  : `Açık ${relatedSale.remainingAmount} ${relatedSale.currency}`}
               </Link>
             </dd>
           </div>

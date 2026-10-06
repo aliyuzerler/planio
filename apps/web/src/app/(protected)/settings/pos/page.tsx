@@ -22,7 +22,7 @@ export default function PosPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const openSales = sales.data?.items ?? [];
+  const openSales = sales.data?.pages.flatMap((page) => page.items) ?? [];
   const selected = openSales.find((item) => item.id === saleId);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

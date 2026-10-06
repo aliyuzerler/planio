@@ -32,6 +32,7 @@ import {
   CreateCounterSaleDto,
   CreateExpenseDto,
   ListExpensesQueryDto,
+  ListLedgerCustomersQueryDto,
   ListLedgerEntriesQueryDto,
   ListSalesQueryDto,
   UpdateCashAccountDto,
@@ -161,7 +162,9 @@ export class LedgerController {
 
   @Get("ledger/customers")
   @RequireBusinessRoles(...cashReadRoles)
-  listLedgerCustomers(): Promise<LedgerCustomerRecord[]> {
-    return this.ledger.listCustomers();
+  listLedgerCustomers(
+    @Query() query: ListLedgerCustomersQueryDto,
+  ): Promise<LedgerCustomerRecord[]> {
+    return this.ledger.listCustomers(query);
   }
 }

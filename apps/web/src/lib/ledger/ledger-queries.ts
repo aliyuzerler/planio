@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import {
   getSale,
@@ -21,15 +21,20 @@ export function useCashAccountList(enabled = true) {
   });
 }
 
-export function useSaleList(filters: {
-  customerId?: string;
-  appointmentId?: string;
-  status?: "OPEN" | "SETTLED";
-} = {}) {
+export function useSaleList(
+  filters: {
+    customerId?: string;
+    appointmentId?: string;
+    status?: "OPEN" | "SETTLED";
+  } = {},
+) {
   const businessId = useAuthStore((state) => state.selectedBusinessId);
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["sales", businessId, filters],
-    queryFn: () => listSales(filters),
+    queryFn: ({ pageParam }) => listSales({ ...filters, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage.page + 1 : undefined,
     enabled: Boolean(businessId),
   });
 }
@@ -54,28 +59,39 @@ export function useSaleReceipt(id: string, enabled = true) {
 
 export function useExpenseList() {
   const businessId = useAuthStore((state) => state.selectedBusinessId);
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["expenses", businessId],
-    queryFn: listExpenses,
+    queryFn: ({ pageParam }) => listExpenses(pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage.page + 1 : undefined,
     enabled: Boolean(businessId),
   });
 }
 
 export function useLedgerEntries(customerId?: string, enabled = true) {
   const businessId = useAuthStore((state) => state.selectedBusinessId);
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["ledger-entries", businessId, customerId],
-    queryFn: () => listLedgerEntries(customerId),
+    queryFn: ({ pageParam }) => listLedgerEntries(customerId, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage.page + 1 : undefined,
     enabled: Boolean(businessId) && enabled,
   });
 }
 
-export function useLedgerCustomers() {
+export function useLedgerCustomers(search = "", enabled = true) {
   const businessId = useAuthStore((state) => state.selectedBusinessId);
-  return useQuery({
-    queryKey: ["ledger-customers", businessId],
-    queryFn: listLedgerCustomers,
-    enabled: Boolean(businessId),
+  const trimmed = search.trim();
+  return useInfiniteQuery({
+    queryKey: ["ledger-customers", businessId, trimmed],
+    queryFn: ({ pageParam }) =>
+      listLedgerCustomers({ page: pageParam, q: trimmed || undefined }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage.page + 1 : undefined,
+    enabled: Boolean(businessId) && enabled,
   });
 }
 

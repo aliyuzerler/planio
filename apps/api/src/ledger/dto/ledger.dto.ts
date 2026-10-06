@@ -239,3 +239,32 @@ export class ListLedgerEntriesQueryDto {
   @Max(100)
   pageSize = 25;
 }
+
+/**
+ * Cari müşteri listesi sorgusu. Parametresiz çağrı (mobil) en fazla
+ * LIST_LEDGER_CUSTOMERS_DEFAULT_LIMIT kayıt alır; sorgu sınırsız değildir.
+ */
+export class ListLedgerCustomersQueryDto {
+  @ApiPropertyOptional({ description: "Ad/soyad arama (içeren, büyük-küçük harf duyarsız)" })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MinLength(0)
+  @MaxLength(100)
+  q?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page = 1;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(500)
+  pageSize = 500;
+}

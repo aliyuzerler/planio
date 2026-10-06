@@ -7,7 +7,10 @@ import type {
 } from "@xenior/types";
 import { RequestContextService } from "../authorization/request-context.service";
 import { PrismaService } from "../infrastructure/prisma/prisma.service";
-import { ListLedgerEntriesQueryDto } from "./dto/ledger.dto";
+import {
+  ListLedgerCustomersQueryDto,
+  ListLedgerEntriesQueryDto,
+} from "./dto/ledger.dto";
 
 @Injectable()
 export class LedgerService {
@@ -57,10 +60,24 @@ export class LedgerService {
     };
   }
 
-  async listCustomers(): Promise<LedgerCustomerRecord[]> {
+  async listCustomers(
+    query: ListLedgerCustomersQueryDto,
+  ): Promise<LedgerCustomerRecord[]> {
     const { businessId } = this.requestContext.requireTenant();
+    const search = query.q?.trim();
     const customers = await this.prisma.customer.findMany({
-      where: { businessId, isActive: true },
+      where: {
+        businessId,
+        isActive: true,
+        ...(search
+          ? {
+              OR: [
+                { firstName: { contains: search, mode: "insensitive" } },
+                { lastName: { contains: search, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
       select: {
         id: true,
         firstName: true,
@@ -68,6 +85,8 @@ export class LedgerService {
         ledgerBalance: true,
       },
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      skip: (query.page - 1) * query.pageSize,
+      take: query.pageSize,
     });
     return customers.map((item) => ({
       id: item.id,

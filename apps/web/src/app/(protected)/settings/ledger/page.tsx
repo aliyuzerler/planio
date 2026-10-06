@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
 import { QueryState } from "@/components/ui/query-state";
@@ -9,8 +10,13 @@ import { useLedgerCustomers, useLedgerEntries } from "@/lib/ledger/ledger-querie
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 
 export default function LedgerPage() {
-  const customers = useLedgerCustomers();
+  const [search, setSearch] = useState("");
+  const customers = useLedgerCustomers(search);
   const entries = useLedgerEntries();
+
+  const customerItems = customers.data?.pages.flatMap((page) => page.items) ?? [];
+  const entryItems = entries.data?.pages.flatMap((page) => page.items) ?? [];
+  const hasMoreEntries = entries.hasNextPage;
 
   return (
     <PageFrame width="lg" className="relative">
@@ -41,38 +47,57 @@ export default function LedgerPage() {
           </h2>
         </div>
         <div className="p-4 sm:p-5">
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Müşteri ara…"
+            className="mb-4 w-full max-w-xs rounded-md border border-[#c5dde6] px-3 py-2 text-sm outline-none focus:border-[#7eb8c8]"
+          />
           <QueryState
             isLoading={customers.isLoading}
             isError={customers.isError}
             onRetry={() => customers.refetch()}
-            isEmpty={customers.data?.length === 0}
+            isEmpty={customerItems.length === 0}
             loading="Cari yükleniyor…"
             error="Cari yüklenemedi."
-            empty="Henüz müşteri yok."
+            empty={search ? "Aramaya uyan müşteri yok." : "Henüz müşteri yok."}
           >
-            {customers.data ? (
-              <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
-                {customers.data.map((person) => (
-                  <li key={person.id}>
-                    <Link
-                      href={`/settings/customers/${person.id}`}
-                      className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 transition hover:bg-[#eef6f8]"
-                    >
-                      <p className="truncate text-[15px] font-semibold text-[#1e3340]">
-                        {person.firstName} {person.lastName}
+            <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+              {customerItems.map((person) => (
+                <li key={person.id}>
+                  <Link
+                    href={`/settings/customers/${person.id}`}
+                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 transition hover:bg-[#eef6f8]"
+                  >
+                    <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                      {person.firstName} {person.lastName}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[15px] font-semibold text-[#2f5563]">
+                        {person.ledgerBalance} TRY
                       </p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-[15px] font-semibold text-[#2f5563]">
-                          {person.ledgerBalance} TRY
-                        </p>
-                        <ArrowRight className="h-4 w-4 text-[#7eb8c8]" />
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+                      <ArrowRight className="h-4 w-4 text-[#7eb8c8]" />
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </QueryState>
+          {customers.hasNextPage ? (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => customers.fetchNextPage()}
+                disabled={customers.isFetchingNextPage}
+                className="rounded-md border border-[#c5dde6] px-4 py-2 text-sm font-medium text-[#2f5563] transition hover:bg-[#eef6f8] disabled:opacity-50"
+              >
+                {customers.isFetchingNextPage
+                  ? "Yükleniyor…"
+                  : "Daha fazla göster"}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -87,48 +112,60 @@ export default function LedgerPage() {
             isLoading={entries.isLoading}
             isError={entries.isError}
             onRetry={() => entries.refetch()}
-            isEmpty={entries.data?.items.length === 0}
+            isEmpty={entryItems.length === 0}
             loading="Hareketler yükleniyor…"
             error="Hareketler yüklenemedi."
             empty="Henüz cari hareket yok."
           >
-            {entries.data ? (
-              <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
-                {entries.data.items.map((entry) => (
-                  <li
-                    key={entry.id}
-                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-[15px] font-semibold text-[#1e3340]">
-                        {entry.customer.firstName} {entry.customer.lastName}
-                      </p>
-                      <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
-                        {entry.saleId ? (
-                          <Link
-                            href={`/settings/sales/${entry.saleId}`}
-                            className="font-medium text-[#3d6b7a] hover:text-[#2f5563]"
-                          >
-                            {entry.description}
-                          </Link>
-                        ) : (
-                          entry.description
-                        )}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[15px] font-semibold text-[#2f5563]">
-                        {entry.amount} TRY
-                      </p>
-                      <p className="mt-0.5 text-[12px] text-[#5a7380]">
-                        Bakiye {entry.balanceAfter} TRY
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+            <ul className="divide-y divide-[#e4f0f4] overflow-hidden rounded-xl ring-1 ring-[#e4f0f4]">
+              {entryItems.map((entry) => (
+                <li
+                  key={entry.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-semibold text-[#1e3340]">
+                      {entry.customer.firstName} {entry.customer.lastName}
+                    </p>
+                    <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
+                      {entry.saleId ? (
+                        <Link
+                          href={`/settings/sales/${entry.saleId}`}
+                          className="font-medium text-[#3d6b7a] hover:text-[#2f5563]"
+                        >
+                          {entry.description}
+                        </Link>
+                      ) : (
+                        entry.description
+                      )}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[15px] font-semibold text-[#2f5563]">
+                      {entry.amount} TRY
+                    </p>
+                    <p className="mt-0.5 text-[12px] text-[#5a7380]">
+                      Bakiye {entry.balanceAfter} TRY
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </QueryState>
+          {hasMoreEntries ? (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => entries.fetchNextPage()}
+                disabled={entries.isFetchingNextPage}
+                className="rounded-md border border-[#c5dde6] px-4 py-2 text-sm font-medium text-[#2f5563] transition hover:bg-[#eef6f8] disabled:opacity-50"
+              >
+                {entries.isFetchingNextPage
+                  ? "Yükleniyor…"
+                  : "Daha fazla göster"}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </PageFrame>
