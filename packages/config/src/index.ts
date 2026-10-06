@@ -124,6 +124,35 @@ export const apiEnvSchema = z
         message: "Production object storage must use an S3-compatible driver.",
       });
     }
+    if (!env.CREDENTIALS_ENCRYPTION_KEY) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["CREDENTIALS_ENCRYPTION_KEY"],
+        message:
+          "CREDENTIALS_ENCRYPTION_KEY is required in production; tenant provider " +
+          "credentials must not fall back to JWT_SECRET.",
+      });
+    } else {
+      if (PLACEHOLDER_SECRET.test(env.CREDENTIALS_ENCRYPTION_KEY)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["CREDENTIALS_ENCRYPTION_KEY"],
+          message:
+            "Production CREDENTIALS_ENCRYPTION_KEY must not use a placeholder value.",
+        });
+      }
+      if (
+        env.CREDENTIALS_ENCRYPTION_KEY === env.JWT_SECRET ||
+        env.CREDENTIALS_ENCRYPTION_KEY === env.JWT_REFRESH_SECRET
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["CREDENTIALS_ENCRYPTION_KEY"],
+          message:
+            "CREDENTIALS_ENCRYPTION_KEY must differ from the JWT secrets.",
+        });
+      }
+    }
   });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;

@@ -418,6 +418,21 @@ describe("Customer management (e2e)", () => {
     expect(denied.body.code).toBe("UNSUPPORTED_FILE_TYPE");
   });
 
+  it("rejects files whose content does not match the declared MIME type", async () => {
+    // İçerik HTML script'i ama başlık PDF diye bildirilmiş.
+    const spoofed = await request(app.getHttpServer())
+      .post(`/api/v1/customers/${customerAId}/files`)
+      .set("Authorization", `Bearer ${tokenA}`)
+      .set(TENANT_HEADER, businessAId)
+      .field("kind", "OTHER")
+      .attach("file", Buffer.from("<html><script>alert(1)</script>"), {
+        filename: "kvkk.pdf",
+        contentType: "application/pdf",
+      })
+      .expect(400);
+    expect(spoofed.body.code).toBe("UNSUPPORTED_FILE_TYPE");
+  });
+
   it("allows STAFF reads and rejects customer mutations", async () => {
     const user = await prisma.user.findUniqueOrThrow({
       where: { email: emails.a },

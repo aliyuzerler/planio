@@ -27,11 +27,13 @@ import { AdminModule } from "./admin/admin.module";
 import { PrivacyModule } from "./privacy/privacy.module";
 import { ReportsModule } from "./reports/reports.module";
 import { AppThrottlerGuard } from "./common/guards/app-throttler.guard";
+import { RedisThrottlerStorage } from "./common/guards/redis-throttler.storage";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./infrastructure/prisma/prisma.module";
-import { RedisModule } from "./infrastructure/redis/redis.module";
+import { REDIS_CLIENT, RedisModule } from "./infrastructure/redis/redis.module";
 import { QueueModule } from "./infrastructure/queue/queue.module";
+import type Redis from "ioredis";
 
 @Module({
   imports: [
@@ -40,8 +42,13 @@ import { QueueModule } from "./infrastructure/queue/queue.module";
       validate: (config) => parseApiEnv(config),
     }),
     ThrottlerModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService<ApiEnv, true>) => ({
+      inject: [ConfigService, REDIS_CLIENT],
+      useFactory: (
+        config: ConfigService<ApiEnv, true>,
+        redis: Redis,
+      ) => ({
+        // Redis depo: limitler tüm replikalar için ortak sayılır.
+        storage: new RedisThrottlerStorage(redis),
         throttlers: [
           {
             name: "default",

@@ -28,6 +28,7 @@ import {
   customerFileStorageKey,
   isAllowedCustomerFileType,
 } from "./customer-files.constants";
+import { detectCustomerFileSignature } from "./customer-file-signature";
 import {
   CreateCustomerDto,
   CustomerHistoryQueryDto,
@@ -427,6 +428,14 @@ export class CustomersService {
     if (!isAllowedCustomerFileType(input.contentType)) {
       throw new BadRequestException({
         message: "Only PDF and image files are allowed.",
+        code: "UNSUPPORTED_FILE_TYPE",
+      });
+    }
+    // Bildirilen MIME türü yerine geçilemez: içerik imzası eşleşmeli.
+    const detected = detectCustomerFileSignature(input.body);
+    if (detected !== input.contentType) {
+      throw new BadRequestException({
+        message: "File content does not match the declared file type.",
         code: "UNSUPPORTED_FILE_TYPE",
       });
     }

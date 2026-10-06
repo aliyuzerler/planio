@@ -60,6 +60,9 @@ export class AuthController {
   @Public()
   @Post("login")
   @HttpCode(HttpStatus.OK)
+  // Kaba kuvvete karşı IP başına dakikada 10 deneme; genel auth limiti
+  // (30/dk) korunur, yalnızca login daha sıkı kısıtlanır.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: "Authenticate with email and password" })
   @ApiOkResponse({ description: "Session created" })
   @ApiUnauthorizedResponse({ description: "Invalid credentials" })
@@ -99,6 +102,8 @@ export class AuthController {
   @Public()
   @Post("forgot-password")
   @HttpCode(HttpStatus.NO_CONTENT)
+  // E-posta bombalamasına karşı IP başına dakikada 5 istek.
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   forgotPassword(@Body() input: ForgotPasswordDto): Promise<void> {
     return this.authService.forgotPassword(input);
   }

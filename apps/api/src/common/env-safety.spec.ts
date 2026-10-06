@@ -15,6 +15,7 @@ const validBase = {
   STORAGE_BUCKET: "xenior-files",
   STORAGE_ACCESS_KEY: "storage-key",
   STORAGE_SECRET_KEY: "storage-secret",
+  CREDENTIALS_ENCRYPTION_KEY: "dedicated-credentials-key-32-chars-min!",
 };
 
 describe("production env safety", () => {
@@ -72,5 +73,25 @@ describe("production env safety", () => {
         STORAGE_DRIVER: "local",
       }),
     ).toThrow(/S3-compatible/i);
+  });
+
+  it("rejects a missing credentials encryption key in production", () => {
+    expect(() =>
+      parseApiEnv({
+        ...validBase,
+        NODE_ENV: "production",
+        CREDENTIALS_ENCRYPTION_KEY: undefined,
+      }),
+    ).toThrow(/CREDENTIALS_ENCRYPTION_KEY/);
+  });
+
+  it("rejects a credentials encryption key shared with a JWT secret", () => {
+    expect(() =>
+      parseApiEnv({
+        ...validBase,
+        NODE_ENV: "production",
+        CREDENTIALS_ENCRYPTION_KEY: validBase.JWT_SECRET,
+      }),
+    ).toThrow(/must differ/i);
   });
 });
