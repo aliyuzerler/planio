@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@xenior/ui";
+import { BUSINESS_ROLE_LABELS } from "@/components/layout/nav-items";
 import { useAuthStore } from "@/stores/auth-store";
 
 export default function SelectBusinessPage() {
@@ -39,7 +40,7 @@ export default function SelectBusinessPage() {
                   {membership.businessName}
                 </span>
                 <span className="block text-sm text-zinc-600">
-                  {membership.role}
+                  {BUSINESS_ROLE_LABELS[membership.role] ?? membership.role}
                 </span>
               </span>
             </Button>

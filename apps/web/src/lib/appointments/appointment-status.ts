@@ -27,3 +27,15 @@ export function appointmentStatusLabel(status: AppointmentRecord["status"]) {
 export function appointmentStatusClass(status: AppointmentRecord["status"]) {
   return APPOINTMENT_STATUS_CLASSES[status];
 }
+
+const APPOINTMENT_EVENT_LABELS: Record<string, string> = {
+  CREATED: "Oluşturuldu",
+  RESCHEDULED: "Yeniden planlandı",
+  CANCELLED: "İptal edildi",
+  COMPLETED: "Tamamlandı",
+  NO_SHOW: "Gelmedi",
+};
+
+export function appointmentEventLabel(type: string) {
+  return APPOINTMENT_EVENT_LABELS[type] ?? type;
+}

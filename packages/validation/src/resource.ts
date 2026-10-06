@@ -26,5 +26,5 @@ export const updateResourceInputSchema: z.ZodType<UpdateResourceInput> = z
   })
   .strict()
   .refine((input) => Object.keys(input).length > 0, {
-    message: "At least one resource field must be provided.",
+    message: "En az bir kaynak alanı girilmelidir.",
   });

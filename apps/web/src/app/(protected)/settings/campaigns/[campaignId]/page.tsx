@@ -19,7 +19,7 @@ import { useServiceList } from "@/lib/services/service-queries";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const btnPrimary =
-  "inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60";
+  "inline-flex items-center gap-2 rounded-xl bg-[#3d7a8c] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a] disabled:opacity-60";
 const btnOutline =
   "inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#2f5563] ring-1 ring-[#c5dde6] transition hover:bg-[#eef6f8] disabled:opacity-60";
 

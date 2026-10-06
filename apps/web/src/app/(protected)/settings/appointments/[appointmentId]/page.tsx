@@ -20,6 +20,7 @@ import {
   rescheduleAppointment,
 } from "@/lib/appointments/appointment-api";
 import { useAppointmentDetail } from "@/lib/appointments/appointment-queries";
+import { appointmentEventLabel } from "@/lib/appointments/appointment-status";
 import { useSaleList } from "@/lib/ledger/ledger-queries";
 
 export default function AppointmentDetailPage() {
@@ -244,7 +245,7 @@ export default function AppointmentDetailPage() {
         <ul className="mt-3 grid gap-2 text-sm">
           {(item.events ?? []).map((event) => (
             <li key={event.id}>
-              {event.type}
+              {appointmentEventLabel(event.type)}
               {event.newStartAt
                 ? ` · ${new Date(event.newStartAt).toLocaleString("tr-TR")}`
                 : ""}

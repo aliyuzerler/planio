@@ -129,7 +129,7 @@ export function LandingPage() {
           <div className="planio-rise planio-rise-delay-3 mb-4 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/register"
-              className="group relative inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:-translate-y-1 hover:bg-[#6aa9bb]"
+              className="group relative inline-flex items-center gap-2 rounded-xl bg-[#3d7a8c] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:-translate-y-1 hover:bg-[#33687a]"
             >
               Ücretsiz başlayın
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -280,7 +280,7 @@ export function LandingPage() {
                         <span
                           className={`rounded-full px-2 py-1 text-[11px] font-bold ${
                             row.active
-                              ? "bg-[#7eb8c8] text-white"
+                              ? "bg-[#3d7a8c] text-white"
                               : "bg-[#e4f0f4] text-[#3d6b7a]"
                           }`}
                         >
@@ -803,7 +803,7 @@ export function LandingPage() {
                 <div className="mb-6 flex flex-wrap items-center justify-center gap-4">
                   <Link
                     href="/register"
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#b8e6df] hover:text-[#2f5563]"
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#3d7a8c] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#b8e6df] hover:text-[#2f5563]"
                   >
                     Ücretsiz hesap oluştur
                     <ArrowRight className="h-5 w-5" />
@@ -863,7 +863,7 @@ export function LandingPage() {
               </button>
               <Link
                 href="/register"
-                className="rounded-lg bg-[#7eb8c8] px-5 py-2 text-[13px] font-semibold text-white hover:bg-[#6aa9bb]"
+                className="rounded-lg bg-[#3d7a8c] px-5 py-2 text-[13px] font-semibold text-white hover:bg-[#33687a]"
               >
                 Ücretsiz başla
               </Link>

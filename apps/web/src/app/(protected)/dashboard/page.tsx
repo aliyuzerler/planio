@@ -17,6 +17,7 @@ import {
 import { PageFrame } from "@/components/ui/page-frame";
 import { PageHeader } from "@/components/ui/page-header";
 import { QueryState } from "@/components/ui/query-state";
+import { usePageTitle } from "@/lib/use-page-title";
 import { AppointmentStatusBadge } from "@/app/(protected)/settings/_components/appointment-status-badge";
 import { useDashboardOverview } from "@/lib/dashboard/dashboard-queries";
 import { useAuthStore } from "@/stores/auth-store";
@@ -25,6 +26,7 @@ import type { AppointmentRecord } from "@xenior/types";
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 
 export default function DashboardPage() {
+  usePageTitle("Gösterge");
   const router = useRouter();
   const selectedBusinessId = useAuthStore((state) => state.selectedBusinessId);
   const role = useAuthStore((state) =>
@@ -113,7 +115,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/settings/appointments"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#3d7a8c] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a]"
           >
             Randevu takvimi
             <ArrowRight className="h-4 w-4" />

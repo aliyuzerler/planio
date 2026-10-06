@@ -41,7 +41,7 @@ export const createCampaignInputSchema: z.ZodType<CreateCampaignInput> = z
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["discountValue"],
-        message: "Percent discount cannot exceed 100.00.",
+        message: "Yüzde indirim en fazla 100,00 olabilir.",
       });
     }
   });
@@ -59,7 +59,7 @@ export const updateCampaignInputSchema: z.ZodType<UpdateCampaignInput> = z
   })
   .strict()
   .refine((input) => Object.keys(input).length > 0, {
-    message: "At least one campaign field must be provided.",
+    message: "En az bir kampanya alanı girilmelidir.",
   })
   .superRefine((input, context) => {
     if (
@@ -70,7 +70,7 @@ export const updateCampaignInputSchema: z.ZodType<UpdateCampaignInput> = z
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["discountValue"],
-        message: "Percent discount cannot exceed 100.00.",
+        message: "Yüzde indirim en fazla 100,00 olabilir.",
       });
     }
   });

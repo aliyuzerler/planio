@@ -44,6 +44,7 @@ export default function LedgerPage() {
           <QueryState
             isLoading={customers.isLoading}
             isError={customers.isError}
+            onRetry={() => customers.refetch()}
             isEmpty={customers.data?.length === 0}
             loading="Cari yükleniyor…"
             error="Cari yüklenemedi."
@@ -85,6 +86,7 @@ export default function LedgerPage() {
           <QueryState
             isLoading={entries.isLoading}
             isError={entries.isError}
+            onRetry={() => entries.refetch()}
             isEmpty={entries.data?.items.length === 0}
             loading="Hareketler yükleniyor…"
             error="Hareketler yüklenemedi."

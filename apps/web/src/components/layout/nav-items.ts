@@ -140,10 +140,10 @@ export function sidebarSectionsForRole(
   pushLink("customers", "/settings/customers");
   pushFolder("catalog", "Katalog", [
     "/settings/services",
+    "/settings/staff",
     "/settings/resources",
     "/settings/specializations",
   ]);
-  pushLink("staff", "/settings/staff");
   pushLink("campaigns", "/settings/campaigns");
   pushFolder("finance", "Finans", [
     "/settings/sales",

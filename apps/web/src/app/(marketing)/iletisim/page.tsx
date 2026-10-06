@@ -42,7 +42,7 @@ export default function ContactPage() {
         </dl>
         <a
           href="mailto:destek@planio.app?subject=Planio%20destek"
-          className="inline-flex rounded-lg bg-[#7eb8c8] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#6aa9bb]"
+          className="inline-flex rounded-lg bg-[#3d7a8c] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#33687a]"
         >
           E-posta gönder
         </a>

@@ -55,7 +55,7 @@ export const updateBusinessInputSchema: z.ZodType<UpdateBusinessInput> = z
   })
   .strict()
   .refine((input) => Object.keys(input).length > 0, {
-    message: "At least one business field must be provided.",
+    message: "En az bir işletme alanı girilmelidir.",
   });
 
 export const inviteAccountantInputSchema: z.ZodType<InviteAccountantInput> = z

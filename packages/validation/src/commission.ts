@@ -21,7 +21,7 @@ function refinePercent(
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["commissionValue"],
-      message: "Percent commission cannot exceed 100.00.",
+      message: "Yüzde prim en fazla 100,00 olabilir.",
     });
   }
 }
@@ -63,7 +63,7 @@ export const updateCommissionRuleInputSchema: z.ZodType<UpdateCommissionRuleInpu
     })
     .strict()
     .refine((input) => Object.keys(input).length > 0, {
-      message: "At least one commission rule field must be provided.",
+      message: "En az bir prim kuralı alanı girilmelidir.",
     })
     .superRefine((input, context) =>
       refinePercent(input.commissionType, input.commissionValue, context),

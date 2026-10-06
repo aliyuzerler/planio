@@ -70,7 +70,7 @@ export const updateCashAccountInputSchema: z.ZodType<UpdateCashAccountInput> = z
   })
   .strict()
   .refine((input) => Object.keys(input).length > 0, {
-    message: "At least one cash account field must be provided.",
+    message: "En az bir kasa alanı girilmelidir.",
   });
 
 const saleLineSchema = z.object({

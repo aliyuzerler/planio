@@ -112,7 +112,7 @@ export default function SpecializationsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#6aa9bb] disabled:opacity-60"
+              className="rounded-xl bg-[#3d7a8c] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#33687a] disabled:opacity-60"
             >
               {saving ? "Ekleniyor…" : "Ekle"}
             </button>

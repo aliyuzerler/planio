@@ -52,7 +52,7 @@ export default function StaffListPage() {
         {canManage ? (
           <Link
             href="/settings/staff/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#3d7a8c] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a]"
           >
             <UserPlus className="h-4 w-4" />
             Yeni kullanıcı
@@ -100,6 +100,7 @@ export default function StaffListPage() {
           <QueryState
             isLoading={staff.isLoading}
             isError={staff.isError}
+            onRetry={() => staff.refetch()}
             isEmpty={staff.data?.length === 0}
             loading="Personel yükleniyor…"
             error="Personel bilgileri yüklenemedi."

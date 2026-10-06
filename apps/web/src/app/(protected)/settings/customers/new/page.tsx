@@ -6,12 +6,17 @@ import type { CreateCustomerInput } from "@xenior/types";
 import { CustomerForm } from "@/app/(protected)/settings/_components/customer-form";
 import { PageFrame } from "@/components/ui/page-frame";
 import { PageHeader } from "@/components/ui/page-header";
+import { useToast } from "@/components/ui/toast";
 import { createCustomer } from "@/lib/customers/customer-api";
 import { useCanManageCustomers } from "@/lib/customers/customer-queries";
+import { usePageTitle } from "@/lib/use-page-title";
 
 export default function NewCustomerPage() {
   const router = useRouter();
   const canManage = useCanManageCustomers();
+  const { pushToast } = useToast();
+
+  usePageTitle("Yeni müşteri");
 
   useEffect(() => {
     if (!canManage) router.replace("/settings/customers");
@@ -19,6 +24,7 @@ export default function NewCustomerPage() {
 
   async function handleSubmit(input: CreateCustomerInput) {
     const customer = await createCustomer(input);
+    pushToast("Müşteri oluşturuldu.");
     router.replace(`/settings/customers/${customer.id}`);
   }
 

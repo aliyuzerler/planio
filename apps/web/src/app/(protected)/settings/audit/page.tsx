@@ -120,6 +120,7 @@ export default function AuditLogsPage() {
           <QueryState
             isLoading={logs.isLoading}
             isError={logs.isError}
+            onRetry={() => logs.refetch()}
             isEmpty={logs.data?.items.length === 0}
             loading="Denetim kaydı yükleniyor…"
             error="Denetim kaydı yüklenemedi."

@@ -47,7 +47,7 @@ export default function CampaignsPage() {
         {canManage ? (
           <Link
             href="/settings/campaigns/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#3d7a8c] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a]"
           >
             <Megaphone className="h-4 w-4" />
             Yeni kampanya
@@ -76,6 +76,7 @@ export default function CampaignsPage() {
           <QueryState
             isLoading={campaigns.isLoading}
             isError={campaigns.isError}
+            onRetry={() => campaigns.refetch()}
             isEmpty={campaigns.data?.length === 0}
             loading="Kampanyalar yükleniyor…"
             error="Kampanyalar yüklenemedi."

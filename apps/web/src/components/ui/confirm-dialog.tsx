@@ -132,7 +132,7 @@ export function ConfirmDialog({
           type="button"
           disabled={!canConfirm}
           onClick={onConfirm}
-          className="inline-flex items-center justify-center rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-xl bg-[#3d7a8c] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a] disabled:opacity-60"
         >
           {pending ? "İşleniyor…" : confirmLabel}
         </button>

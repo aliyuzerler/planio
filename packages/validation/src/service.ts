@@ -50,5 +50,5 @@ export const updateServiceInputSchema: z.ZodType<UpdateServiceInput> = z
   })
   .strict()
   .refine((input) => Object.keys(input).length > 0, {
-    message: "At least one service field must be provided.",
+    message: "En az bir hizmet alanı girilmelidir.",
   });

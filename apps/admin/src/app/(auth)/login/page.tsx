@@ -69,7 +69,6 @@ export default function LoginPage() {
           <input
             required
             type="password"
-            minLength={12}
             maxLength={128}
             autoComplete="current-password"
             value={password}

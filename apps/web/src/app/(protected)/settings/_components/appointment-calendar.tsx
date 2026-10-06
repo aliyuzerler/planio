@@ -141,7 +141,7 @@ export function AppointmentCalendar() {
                 aria-pressed={view === item.id}
                 className={`px-3.5 py-2 text-sm font-semibold transition ${
                   view === item.id
-                    ? "bg-[#7eb8c8] text-white"
+                    ? "bg-[#3d7a8c] text-white"
                     : "bg-white text-[#3d6b7a] hover:bg-[#F7FBFC]"
                 }`}
                 onClick={() => setView(item.id)}

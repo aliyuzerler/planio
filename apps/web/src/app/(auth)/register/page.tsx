@@ -146,7 +146,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-xl bg-[#7eb8c8] px-5 py-3.5 text-[15px] font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#6aa9bb] disabled:translate-y-0 disabled:opacity-50 sm:col-span-2"
+          className="rounded-xl bg-[#3d7a8c] px-5 py-3.5 text-[15px] font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#33687a] disabled:translate-y-0 disabled:opacity-50 sm:col-span-2"
         >
           {submitting ? "Oluşturuluyor…" : "Ücretsiz hesap oluştur"}
         </button>

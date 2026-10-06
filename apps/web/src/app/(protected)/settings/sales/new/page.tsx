@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
+import { useToast } from "@/components/ui/toast";
 import { AppError } from "@/lib/api/errors";
 import { useCustomerList } from "@/lib/customers/customer-queries";
 import { createCounterSale } from "@/lib/ledger/ledger-api";
@@ -19,6 +20,7 @@ const fieldClass =
 export default function NewSalePage() {
   const router = useRouter();
   const canWrite = useCanWriteCash();
+  const { pushToast } = useToast();
   const customers = useCustomerList({ isActive: true });
   const services = useServiceList({ isActive: true });
   const staff = useStaffList({ isActive: true, loginRole: "STAFF" });
@@ -44,6 +46,7 @@ export default function NewSalePage() {
         staffId: staffId || null,
         notes: notes || null,
       });
+      pushToast("Satış oluşturuldu.");
       router.replace(`/settings/sales/${sale.id}`);
     } catch (cause) {
       setError(cause instanceof AppError ? cause.message : "Satış oluşturulamadı.");
@@ -161,7 +164,7 @@ export default function NewSalePage() {
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center justify-center rounded-xl bg-[#7eb8c8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-xl bg-[#3d7a8c] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a] disabled:opacity-60"
         >
           {submitting ? "Kaydediliyor…" : "Satış oluştur"}
         </button>

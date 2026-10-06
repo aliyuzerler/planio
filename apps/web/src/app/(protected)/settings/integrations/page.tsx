@@ -19,7 +19,7 @@ const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as 
 const fieldClass =
   "rounded-xl border-0 bg-[#F7FBFC] px-3 py-2.5 text-[15px] text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none transition focus:ring-2 focus:ring-[#7eb8c8]";
 const btnPrimary =
-  "inline-flex items-center justify-center rounded-xl bg-[#7eb8c8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60";
+  "inline-flex items-center justify-center rounded-xl bg-[#3d7a8c] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a] disabled:opacity-60";
 
 export default function IntegrationsPage() {
   const role = useAuthStore((state) =>

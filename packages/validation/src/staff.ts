@@ -64,7 +64,7 @@ export const createStaffInputSchema: z.ZodType<CreateStaffInput> = z
       .array(z.string().uuid())
       .max(50)
       .refine((ids) => new Set(ids).size === ids.length, {
-        message: "Specialization IDs must be unique.",
+        message: "Aynı uzmanlık birden fazla kez seçilemez.",
       })
       .optional(),
   })
@@ -73,7 +73,7 @@ export const createStaffInputSchema: z.ZodType<CreateStaffInput> = z
     if (input.loginRole === "ACCOUNTANT" && !input.email) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Accountant invites require an email address.",
+        message: "Muhasebe rolü için e-posta adresi zorunludur.",
         path: ["email"],
       });
     }
@@ -83,7 +83,7 @@ export const createStaffInputSchema: z.ZodType<CreateStaffInput> = z
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Accountants cannot be assigned specializations.",
+        message: "Muhasebe rolüne uzmanlık atanamaz.",
         path: ["specializationIds"],
       });
     }
@@ -100,7 +100,7 @@ export const updateStaffInputSchema: z.ZodType<UpdateStaffInput> = z
   })
   .strict()
   .refine((input) => Object.keys(input).length > 0, {
-    message: "At least one staff field must be provided.",
+    message: "En az bir personel alanı girilmelidir.",
   });
 
 export const createSpecializationInputSchema: z.ZodType<CreateSpecializationInput> =

@@ -48,7 +48,7 @@ export default function ServicesPage() {
         {canManage ? (
           <Link
             href="/settings/services/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#3d7a8c] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a]"
           >
             <Sparkles className="h-4 w-4" />
             Yeni hizmet
@@ -82,6 +82,7 @@ export default function ServicesPage() {
           <QueryState
             isLoading={services.isLoading}
             isError={services.isError}
+            onRetry={() => services.refetch()}
             isEmpty={services.data?.length === 0}
             loading="Hizmetler yükleniyor…"
             error="Hizmetler yüklenemedi."

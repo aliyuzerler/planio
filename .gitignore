@@ -43,6 +43,9 @@ test-results/
 Thumbs.db
 Desktop.ini
 
+# Binary assets / archives (keep source assets out of git)
+*.zip
+
 # Local agent workspace (contains session plans, may embed pasted tokens)
 .zcode/
 

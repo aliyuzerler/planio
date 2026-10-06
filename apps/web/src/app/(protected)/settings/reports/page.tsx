@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
 import { QueryState } from "@/components/ui/query-state";
+import { usePageTitle } from "@/lib/use-page-title";
 import { useCanReadReports, useFinanceSummary } from "@/lib/reports/reports-queries";
 import type { FinanceSummaryReport } from "@xenior/types";
 
@@ -22,6 +23,7 @@ const EXPENSE_LABEL: Record<string, string> = {
 };
 
 export default function ReportsPage() {
+  usePageTitle("Raporlar");
   const canRead = useCanReadReports();
   const [date, setDate] = useState("");
   const summary = useFinanceSummary(date || undefined);
@@ -91,6 +93,7 @@ export default function ReportsPage() {
           <QueryState
             isLoading={summary.isLoading}
             isError={summary.isError}
+            onRetry={() => summary.refetch()}
             loading="Rapor yükleniyor…"
             error="Rapor yüklenemedi."
           >

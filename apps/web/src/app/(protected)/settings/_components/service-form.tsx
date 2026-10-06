@@ -119,7 +119,7 @@ export function ServiceForm({
       <button
         type="submit"
         disabled={submitting}
-        className="inline-flex items-center justify-center rounded-xl bg-[#7eb8c8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60"
+        className="inline-flex items-center justify-center rounded-xl bg-[#3d7a8c] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a] disabled:opacity-60"
       >
         {submitting ? "Kaydediliyor…" : submitLabel}
       </button>

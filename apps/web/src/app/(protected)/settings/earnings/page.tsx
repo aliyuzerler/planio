@@ -46,6 +46,7 @@ export default function EarningsPage() {
           <QueryState
             isLoading={entries.isLoading}
             isError={entries.isError}
+            onRetry={() => entries.refetch()}
             isEmpty={entries.data?.items.length === 0}
             loading="Hakediş yükleniyor…"
             error="Hakediş yüklenemedi."
@@ -91,7 +92,7 @@ export default function EarningsPage() {
                         ) : (
                           <Link
                             href={`/settings/expenses/new?category=COMMISSION&amount=${entry.amount}&commissionEntryId=${entry.id}`}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#7eb8c8] px-3 py-1.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#3d7a8c] px-3 py-1.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-[#33687a]"
                           >
                             <Wallet className="h-3.5 w-3.5" />
                             Öde

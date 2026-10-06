@@ -8,7 +8,7 @@ import { useSaleReceipt } from "@/lib/ledger/ledger-queries";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const btnPrimary =
-  "inline-flex items-center gap-2 rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb]";
+  "inline-flex items-center gap-2 rounded-xl bg-[#3d7a8c] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a]";
 const btnOutline =
   "inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#2f5563] ring-1 ring-[#c5dde6] transition hover:bg-[#eef6f8]";
 

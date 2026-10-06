@@ -21,18 +21,19 @@ import {
   usePlans,
   useSubscriptionAccess,
 } from "@/lib/subscriptions/subscription-queries";
+import { subscriptionStatusText } from "@/lib/subscriptions/trial";
 import { useAuthStore } from "@/stores/auth-store";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const fieldClass =
   "rounded-xl border-0 bg-[#F7FBFC] px-3 py-2.5 text-[15px] text-[#1e3340] ring-1 ring-[#c5dde6]/80 outline-none transition focus:ring-2 focus:ring-[#7eb8c8]";
 const btnPrimary =
-  "inline-flex items-center justify-center rounded-xl bg-[#7eb8c8] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#6aa9bb] disabled:opacity-60";
+  "inline-flex items-center justify-center rounded-xl bg-[#3d7a8c] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#33687a] disabled:opacity-60";
 const btnOutline =
   "inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#2f5563] ring-1 ring-[#c5dde6] transition hover:bg-[#eef6f8] disabled:opacity-60";
 
 const STATUS_LABELS: Record<SubscriptionStatus, string> = {
-  TRIALING: "Ödeme bekleniyor",
+  TRIALING: "Deneme",
   ACTIVE: "Aktif",
   PAST_DUE: "Ödeme bekliyor",
   PAUSED: "Duraklatıldı",
@@ -247,7 +248,14 @@ function CurrentSubscriptionCard({
         {subscription ? (
           <dl className="grid gap-3 sm:grid-cols-2">
             <InfoRow label="Plan" value={subscription.plan.name} />
-            <InfoRow label="Durum" value={STATUS_LABELS[subscription.status]} />
+            <InfoRow
+              label="Durum"
+              value={subscriptionStatusText(
+                subscription.status,
+                subscription.currentPeriodEnd,
+                STATUS_LABELS[subscription.status],
+              )}
+            />
             <InfoRow
               label="Faturalama dönemi"
               value={PERIOD_LABELS[subscription.plan.billingPeriod]}
@@ -269,7 +277,13 @@ function CurrentSubscriptionCard({
         <div className="mt-4 grid gap-1 rounded-xl bg-[#F7FBFC] px-4 py-3 text-[13px] text-[#5a7380] ring-1 ring-[#e4f0f4]">
           <p>
             Erişim: {access.hasAccess ? "Açık" : "Kapalı"}
-            {access.status ? ` · ${STATUS_LABELS[access.status]}` : ""}
+            {access.status
+              ? ` · ${subscriptionStatusText(
+                  access.status,
+                  subscription?.currentPeriodEnd,
+                  STATUS_LABELS[access.status],
+                )}`
+              : ""}
           </p>
           <p>
             Personel: {access.usage.staff}

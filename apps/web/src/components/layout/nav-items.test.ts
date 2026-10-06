@@ -47,7 +47,6 @@ describe("app navigation", () => {
       "appointments",
       "customers",
       "catalog",
-      "staff",
       "campaigns",
       "finance",
       "commissions",
@@ -62,6 +61,18 @@ describe("app navigation", () => {
       "Prim & hakediş",
       "Ayarlar",
     ]);
+
+    const catalog = sections.find((section) => section.id === "catalog");
+    expect(catalog).toBeDefined();
+    expect(catalog?.kind).toBe("folder");
+    if (catalog?.kind === "folder") {
+      expect(catalog.children.map((item) => item.href)).toEqual([
+        "/settings/services",
+        "/settings/staff",
+        "/settings/resources",
+        "/settings/specializations",
+      ]);
+    }
 
     const hrefs = sections.flatMap((section) =>
       section.kind === "link"

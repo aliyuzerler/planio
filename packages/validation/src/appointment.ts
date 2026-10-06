@@ -120,7 +120,7 @@ export const createAppointmentInputSchema: z.ZodType<CreateAppointmentInput> = z
       input.paymentPlan !== "DEPOSIT" ||
       (input.depositAmount != null && input.depositAmount !== "0.00"),
     {
-      message: "Deposit amount is required for a deposit payment plan.",
+      message: "Kapora ödeme planı için kapora tutarı zorunludur.",
       path: ["depositAmount"],
     },
   );
@@ -131,7 +131,7 @@ export const updateAppointmentInputSchema: z.ZodType<UpdateAppointmentInput> = z
   })
   .strict()
   .refine((input) => Object.keys(input).length > 0, {
-    message: "At least one appointment field must be provided.",
+    message: "En az bir randevu alanı girilmelidir.",
   });
 
 export const rescheduleAppointmentInputSchema: z.ZodType<RescheduleAppointmentInput> =
@@ -151,7 +151,7 @@ export const rescheduleAppointmentInputSchema: z.ZodType<RescheduleAppointmentIn
         input.serviceId !== undefined ||
         input.startAt !== undefined ||
         input.resourceId !== undefined,
-      { message: "At least one reschedule field must be provided." },
+      { message: "En az bir yeniden planlama alanı girilmelidir." },
     );
 
 const calendarDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);

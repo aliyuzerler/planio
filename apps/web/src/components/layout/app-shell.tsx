@@ -14,9 +14,13 @@ import {
   type SidebarSection,
 } from "@/components/layout/nav-items";
 import { SubscriptionPaywallBanner } from "@/components/layout/subscription-paywall-banner";
+import { SubscriptionTrialBanner } from "@/components/layout/subscription-trial-banner";
 import { logout } from "@/lib/auth/auth-api";
 import { isSubscriptionWritePath } from "@/lib/subscriptions/subscription-write-paths";
-import { useSubscriptionAccess } from "@/lib/subscriptions/subscription-queries";
+import {
+  useCurrentSubscription,
+  useSubscriptionAccess,
+} from "@/lib/subscriptions/subscription-queries";
 import { useAuthStore } from "@/stores/auth-store";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -28,6 +32,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const selectedBusinessId = useAuthStore((state) => state.selectedBusinessId);
   const clearSession = useAuthStore((state) => state.clearSession);
   const access = useSubscriptionAccess();
+  const currentSubscription = useCurrentSubscription();
   const business = memberships.find(
     (membership) => membership.businessId === selectedBusinessId,
   );
@@ -165,6 +170,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </p>
           </div>
         </header>
+        {access.data?.hasAccess !== false ? (
+          <SubscriptionTrialBanner subscription={currentSubscription.data} />
+        ) : null}
         <SubscriptionPaywallBanner access={access.data} />
         <main className="flex-1 bg-white lg:bg-transparent">{children}</main>
       </div>

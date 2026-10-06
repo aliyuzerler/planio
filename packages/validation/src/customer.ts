@@ -21,7 +21,10 @@ function isValidBirthDate(value: string): boolean {
 export const customerBirthDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .refine(isValidBirthDate, "Birth date must be a valid non-future date.");
+  .refine(
+    isValidBirthDate,
+    "Doğum tarihi geçerli ve gelecekte olmayan bir tarih olmalıdır.",
+  );
 
 export const customerProfileSchema: z.ZodType<CustomerProfile> = z.object({
   id: z.string().uuid(),
@@ -86,7 +89,7 @@ export const updateCustomerInputSchema: z.ZodType<UpdateCustomerInput> = z
   })
   .strict()
   .refine((input) => Object.keys(input).length > 0, {
-    message: "At least one customer field must be provided.",
+    message: "En az bir müşteri alanı girilmelidir.",
   });
 
 export const paginatedCustomerSchema: z.ZodType<

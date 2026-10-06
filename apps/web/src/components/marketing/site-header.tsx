@@ -42,7 +42,7 @@ export function SiteHeader() {
           </Link>
           <Link
             href="/register"
-            className="inline-flex items-center justify-center rounded-lg bg-[#7eb8c8] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#6aa9bb]"
+            className="inline-flex items-center justify-center rounded-lg bg-[#3d7a8c] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#33687a]"
           >
             Ücretsiz Dene
           </Link>
