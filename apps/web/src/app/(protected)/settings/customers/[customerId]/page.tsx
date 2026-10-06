@@ -19,6 +19,7 @@ import {
 import { useAuthStore } from "@/stores/auth-store";
 import { CustomerFiles } from "@/app/(protected)/settings/_components/customer-files";
 import { useCanReadCash, useLedgerEntries } from "@/lib/ledger/ledger-queries";
+import { formatTry } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 
@@ -106,7 +107,7 @@ export default function CustomerDetailPage() {
             <StatusBadge active={person.isActive} />
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef6f8] px-2.5 py-0.5 text-[12px] font-semibold text-[#3d6b7a]">
               <Wallet className="h-3.5 w-3.5" />
-              Cari: {formatLedgerBalance(person.ledgerBalance)} TRY
+              Cari: {formatTry(person.ledgerBalance)}
             </span>
           </div>
         </div>
@@ -302,9 +303,4 @@ function PageMessage({ children }: { children: ReactNode }) {
       <p className="text-sm text-[#5a7380]">{children}</p>
     </PageFrame>
   );
-}
-
-function formatLedgerBalance(value: string): string {
-  const [whole = "0", fraction = "00"] = value.split(".");
-  return `${whole},${fraction.padEnd(2, "0")}`;
 }

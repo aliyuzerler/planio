@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
 import { QueryState } from "@/components/ui/query-state";
+import { formatTry } from "@/lib/money";
 import { useLedgerCustomers, useLedgerEntries } from "@/lib/ledger/ledger-queries";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
@@ -75,7 +76,7 @@ export default function LedgerPage() {
                     </p>
                     <div className="flex items-center gap-2">
                       <p className="text-[15px] font-semibold text-[#2f5563]">
-                        {person.ledgerBalance} TRY
+                        {formatTry(person.ledgerBalance)}
                       </p>
                       <ArrowRight className="h-4 w-4 text-[#7eb8c8]" />
                     </div>
@@ -142,10 +143,10 @@ export default function LedgerPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-[15px] font-semibold text-[#2f5563]">
-                      {entry.amount} TRY
+                      {formatTry(entry.amount)}
                     </p>
                     <p className="mt-0.5 text-[12px] text-[#5a7380]">
-                      Bakiye {entry.balanceAfter} TRY
+                      Bakiye {formatTry(entry.balanceAfter)}
                     </p>
                   </div>
                 </li>

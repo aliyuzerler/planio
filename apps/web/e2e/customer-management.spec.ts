@@ -180,7 +180,7 @@ test("staff role receives read-only customer details and empty history", async (
   await expect(
     page.getByText("Bu müşteri için henüz randevu kaydı yok."),
   ).toBeVisible();
-  await expect(page.getByText("Cari: 0,00 TRY")).toBeVisible();
+  await expect(page.getByText("Cari: ₺0,00")).toBeVisible();
   await expect(page.getByRole("button", { name: "Yükle" })).toHaveCount(0);
   await expect(
     page.getByText("Bu müşteri için henüz belge yok."),
@@ -276,7 +276,7 @@ test("owner sees cari balance and can upload a KVKK file", async ({ page }) => {
   );
 
   await page.goto(`/settings/customers/${customerId}`);
-  await expect(page.getByText("Cari: 0,00 TRY")).toBeVisible();
+  await expect(page.getByText("Cari: ₺0,00")).toBeVisible();
   await page.getByLabel("Belge türü").selectOption("KVKK");
   await page.getByLabel("Dosya").setInputFiles({
     name: "kvkk.pdf",
