@@ -1,5 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// E2E varsayılan olarak production build'i ("pnpm build && pnpm start")
+// test eder; PW_DEV_SERVER=1 ile dev sunucuya döner.
+const useProdServer = process.env.PW_DEV_SERVER !== "1";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -16,9 +20,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm dev",
+    command: useProdServer ? "pnpm build && pnpm start" : "pnpm dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 300_000,
   },
 });
