@@ -1,0 +1,145 @@
+# TLS sonlandıran ters vekil (şablon). nginx:alpine bu dosyayı başlangıçta
+# envsubst ile işler; ${WEB_DOMAIN}, ${ADMIN_DOMAIN}, ${API_DOMAIN} değerleri
+# docker/.env.production dosyasından gelir. nginx'in kendi $host gibi
+# değişkenlerine dokunulmaz.
+#
+# Sertifikalar docker/nginx/certs/fullchain.pem ve privkey.pem olarak
+# bağlanır; tek sertifika üç alan adını da kapsamalı (SAN) ya da her sunucu
+# bloğu için ayrı sertifika yolları kullanılmalı. Sertifika üretimi için
+# docs/PRODUCTION.md -> "TLS sertifikası" bölümüne bakın.
+
+upstream xenior_web {
+  server web:3000;
+}
+
+upstream xenior_admin {
+  server admin:3002;
+}
+
+upstream xenior_api {
+  server api:3001;
+}
+
+# ---- Genel ayarlar ----
+client_max_body_size 12m;          # müşteri dosya yüklemeleri 10 MB üst sınır
+proxy_connect_timeout 10s;
+proxy_read_timeout 60s;
+proxy_send_timeout 60s;
+
+gzip on;
+gzip_comp_level 5;
+gzip_min_length 1024;
+gzip_vary on;
+gzip_proxied any;
+gzip_types
+  application/javascript
+  application/json
+  application/manifest+json
+  image/svg+xml
+  text/css
+  text/plain
+  text/xml;
+
+# ---- Web uygulaması (planio.com gibi) ----
+server {
+  listen 80;
+  server_name ${WEB_DOMAIN} www.${WEB_DOMAIN};
+  return 301 https://$host$request_uri;
+}
+
+server {
+  listen 443 ssl;
+  http2 on;
+  server_name ${WEB_DOMAIN} www.${WEB_DOMAIN};
+
+  ssl_certificate /etc/nginx/certs/fullchain.pem;
+  ssl_certificate_key /etc/nginx/certs/privkey.pem;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers off;
+  ssl_session_cache shared:SSL:10m;
+
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+  location /_next/static/ {
+    proxy_pass http://xenior_web;
+    proxy_set_header Host $host;
+    # İçerik adresli (hashed) statik varlıklar: agresif önbellek güvenli.
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+
+  location / {
+    proxy_pass http://xenior_web;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+}
+
+# ---- Admin paneli (admin.planio.com gibi) ----
+server {
+  listen 80;
+  server_name ${ADMIN_DOMAIN};
+  return 301 https://$host$request_uri;
+}
+
+server {
+  listen 443 ssl;
+  http2 on;
+  server_name ${ADMIN_DOMAIN};
+
+  ssl_certificate /etc/nginx/certs/fullchain.pem;
+  ssl_certificate_key /etc/nginx/certs/privkey.pem;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_session_cache shared:SSL:10m;
+
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+  location /_next/static/ {
+    proxy_pass http://xenior_admin;
+    proxy_set_header Host $host;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+
+  location / {
+    proxy_pass http://xenior_admin;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+}
+
+# ---- API (api.planio.com gibi) ----
+server {
+  listen 80;
+  server_name ${API_DOMAIN};
+  return 301 https://$host$request_uri;
+}
+
+server {
+  listen 443 ssl;
+  http2 on;
+  server_name ${API_DOMAIN};
+
+  ssl_certificate /etc/nginx/certs/fullchain.pem;
+  ssl_certificate_key /etc/nginx/certs/privkey.pem;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_session_cache shared:SSL:10m;
+
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+  # Webhook'lar (iyzico) gövde imzasını doğruladığı için gövde değişmemeli.
+  location /api/ {
+    proxy_pass http://xenior_api;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_request_buffering off;
+  }
+
+  location / {
+    proxy_pass http://xenior_api;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+}

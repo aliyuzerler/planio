@@ -13,14 +13,17 @@ RUN pnpm --filter @xenior/validation build
 RUN pnpm --filter @xenior/ui build
 RUN pnpm --filter @xenior/admin build
 
+# Runtime yalnızca standalone çıktısını taşır: minimal node_modules +
+# statik dosyalar + public. Tam node_modules/packages kopyalanmaz.
 FROM node:22-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3002
 RUN addgroup -S xenior && adduser -S xenior -G xenior
-COPY --from=build --chown=xenior:xenior /app/package.json ./package.json
-COPY --from=build --chown=xenior:xenior /app/node_modules ./node_modules
-COPY --from=build --chown=xenior:xenior /app/packages ./packages
-COPY --from=build --chown=xenior:xenior /app/apps/admin ./apps/admin
+COPY --from=build --chown=xenior:xenior /app/apps/admin/.next/standalone ./
+COPY --from=build --chown=xenior:xenior /app/apps/admin/.next/static ./apps/admin/.next/static
+COPY --from=build --chown=xenior:xenior /app/apps/admin/public ./apps/admin/public
 USER xenior
 EXPOSE 3002
-CMD ["pnpm", "--filter", "@xenior/admin", "start"]
+CMD ["node", "apps/admin/server.js"]

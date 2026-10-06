@@ -47,6 +47,9 @@ function securityHeaders(): Record<string, string> {
 }
 
 const nextConfig: NextConfig = {
+  // Docker imajını küçültür: .next/standalone altında kendi kendine yeterli
+  // sunucu üretir (node_modules'in tamamı imaja kopyalanmaz).
+  output: "standalone",
   poweredByHeader: false,
   transpilePackages: [
     "@xenior/ui",

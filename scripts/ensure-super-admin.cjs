@@ -1,6 +1,38 @@
 const { randomBytes } = require("node:crypto");
-const { PrismaClient } = require("@prisma/client");
-const argon2 = require("../apps/api/node_modules/argon2");
+
+// pnpm workspace: paketler kendi node_modules'lerine sahiptir; script repo
+// kökünden çalıştığı için çözümleme sırası dener.
+function resolvePrismaClient() {
+  const candidates = [
+    "@prisma/client",
+    "../packages/database/node_modules/@prisma/client",
+  ];
+  for (const candidate of candidates) {
+    try {
+      return require(candidate);
+    } catch {
+      // sıradaki yolu dene
+    }
+  }
+  throw new Error(
+    "@prisma/client bulunamadı. Repo kökünde `pnpm install` çalıştırın.",
+  );
+}
+
+function resolveArgon2() {
+  const candidates = ["argon2", "../apps/api/node_modules/argon2"];
+  for (const candidate of candidates) {
+    try {
+      return require(candidate);
+    } catch {
+      // sıradaki yolu dene
+    }
+  }
+  throw new Error("argon2 bulunamadı. Repo kökünde `pnpm install` çalıştırın.");
+}
+
+const { PrismaClient } = resolvePrismaClient();
+const argon2 = resolveArgon2();
 
 // Süper admin e-postası/bilgileri ortamdan alınır; şifre asla kodda tutulmaz.
 // Şifre sağlama sırası: SUPER_ADMIN_PASSWORD ortam değişkeni, yoksa

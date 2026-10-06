@@ -92,6 +92,7 @@ apps/mobile/**/*.map.json
 
 # Docker
 docker/data/
+docker/nginx/certs/
 
 # Local object storage
 storage/
