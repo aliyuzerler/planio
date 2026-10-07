@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // Korunan uygulama alanları dizinlenmez.
-        disallow: ["/api/", "/dashboard", "/settings", "/select-business", "/login", "/register"],
+        disallow: ["/api/", "/dashboard", "/settings", "/select-business", "/login", "/register", "/verify-email"],
       },
     ],
     sitemap: `${getSiteUrl()}/sitemap.xml`,
