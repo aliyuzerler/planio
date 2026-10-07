@@ -16,6 +16,7 @@ import {
   useCanManageCampaigns,
 } from "@/lib/campaigns/campaign-queries";
 import { useServiceList } from "@/lib/services/service-queries";
+import { formatTry } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const btnPrimary =
@@ -165,7 +166,7 @@ export default function CampaignDetailPage() {
           <dd className="mt-1 text-sm text-[#1e3340]">
             {item.discountType === "PERCENT"
               ? `%${item.discountValue}`
-              : `${item.discountValue} TRY`}
+              : formatTry(item.discountValue)}
           </dd>
         </div>
         <div>

@@ -8,6 +8,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { AppError } from "@/lib/api/errors";
 import { collectSale } from "@/lib/ledger/ledger-api";
 import { useCanWriteCash, useSaleList } from "@/lib/ledger/ledger-queries";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const fieldClass =
@@ -100,7 +101,7 @@ export default function PosPage() {
                   {openSales.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.customer.firstName} {item.customer.lastName} · kalan{" "}
-                      {item.remainingAmount} {item.currency}
+                      {formatMoney(item.remainingAmount, item.currency)}
                     </option>
                   ))}
                 </select>
@@ -150,7 +151,7 @@ export default function PosPage() {
                         {item.customer.firstName} {item.customer.lastName}
                       </p>
                       <p className="mt-0.5 text-[13px] text-[#5a7380]">
-                        Kalan {item.remainingAmount} {item.currency}
+                        Kalan {formatMoney(item.remainingAmount, item.currency)}
                       </p>
                     </div>
                     <ArrowRight className="h-4 w-4 shrink-0 text-[#7eb8c8]" />

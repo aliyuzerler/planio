@@ -17,3 +17,23 @@ export function formatTry(amount: string | number): string {
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return `${negative ? "-" : ""}₺${grouped},${fraction.padEnd(2, "0").slice(0, 2)}`;
 }
+
+/**
+ * Para birimi bilinçli gösterim: TRY için ₺ biçimi, diğer para birimlerinde
+ * ham tutar + kod (ürün şu an yalnızca TRY kullanıyor).
+ */
+export function formatMoney(
+  amount: string | number,
+  currency = "TRY",
+): string {
+  if (currency === "TRY") {
+    return formatTry(amount);
+  }
+  const value = typeof amount === "string" ? Number(amount) : amount;
+  if (!Number.isFinite(value)) {
+    return `0,00 ${currency}`;
+  }
+  const [whole, fraction = ""] = Math.abs(value).toFixed(2).split(".");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${value < 0 ? "-" : ""}${grouped},${fraction.padEnd(2, "0").slice(0, 2)} ${currency}`;
+}

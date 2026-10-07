@@ -23,6 +23,7 @@ import {
 } from "@/lib/subscriptions/subscription-queries";
 import { subscriptionStatusText } from "@/lib/subscriptions/trial";
 import { useAuthStore } from "@/stores/auth-store";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const fieldClass =
@@ -58,7 +59,7 @@ const PAYMENT_STATUS_LABELS = {
 } as const;
 
 function formatPrice(plan: Pick<PlanRecord, "price" | "currency">): string {
-  return `${plan.price} ${plan.currency}`;
+  return formatMoney(plan.price, plan.currency);
 }
 
 function formatInstant(value: string): string {
@@ -175,7 +176,7 @@ function SubscriptionSettingsContent() {
                   >
                     <div>
                       <p className="text-[15px] font-semibold text-[#1e3340]">
-                        {payment.amount} {payment.currency}
+                        {formatMoney(payment.amount, payment.currency)}
                       </p>
                       <p className="mt-0.5 text-[13px] text-[#5a7380]">
                         {formatInstant(payment.createdAt)}

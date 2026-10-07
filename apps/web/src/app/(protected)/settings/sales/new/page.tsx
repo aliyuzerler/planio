@@ -12,6 +12,7 @@ import { createCounterSale } from "@/lib/ledger/ledger-api";
 import { useCanWriteCash } from "@/lib/ledger/ledger-queries";
 import { useServiceList } from "@/lib/services/service-queries";
 import { useStaffList } from "@/lib/staff/staff-queries";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const fieldClass =
@@ -121,7 +122,7 @@ export default function NewSalePage() {
                 <option value="">Seçin</option>
                 {(services.data ?? []).map((service) => (
                   <option key={service.id} value={service.id}>
-                    {service.name} ({service.price} {service.currency})
+                    {service.name} ({formatMoney(service.price, service.currency)})
                   </option>
                 ))}
               </select>

@@ -22,6 +22,7 @@ import {
 import { useAppointmentDetail } from "@/lib/appointments/appointment-queries";
 import { appointmentEventLabel } from "@/lib/appointments/appointment-status";
 import { useSaleList } from "@/lib/ledger/ledger-queries";
+import { formatMoney } from "@/lib/money";
 
 export default function AppointmentDetailPage() {
   const { appointmentId } = useParams<{ appointmentId: string }>();
@@ -124,7 +125,7 @@ export default function AppointmentDetailPage() {
         <div>
           <dt className="text-xs uppercase text-zinc-500">Ücret</dt>
           <dd className="mt-1 text-sm">
-            {item.servicePriceSnapshot} {item.currency}
+            {formatMoney(item.servicePriceSnapshot, item.currency)}
             {item.discountAmountSnapshot !== "0.00"
               ? ` · liste ${item.listPriceSnapshot}, indirim ${item.discountAmountSnapshot}${item.campaignNameSnapshot ? ` (${item.campaignNameSnapshot})` : ""}`
               : ""}
@@ -145,7 +146,7 @@ export default function AppointmentDetailPage() {
                 ? "Kısmi"
                 : "Ödenmedi"}
             {item.remainingAmount !== "0.00"
-              ? ` · kalan ${item.remainingAmount} ${item.currency}`
+              ? ` · kalan ${formatMoney(item.remainingAmount, item.currency)}`
               : ""}
           </dd>
         </div>
@@ -163,7 +164,7 @@ export default function AppointmentDetailPage() {
               >
                 {relatedSale.remainingAmount === "0.00"
                   ? "Tahsil edildi"
-                  : `Açık ${relatedSale.remainingAmount} ${relatedSale.currency}`}
+                  : `Açık ${formatMoney(relatedSale.remainingAmount, relatedSale.currency)}`}
               </Link>
             </dd>
           </div>
@@ -286,7 +287,7 @@ export default function AppointmentDetailPage() {
       <ConfirmDialog
         open={confirmComplete}
         title="Kalan tutar var"
-        description={`Gününde kalan ${item.remainingAmount} ${item.currency}. Tamamlamak tahsilatı engellemez; nakit, POS veya yeni link ile kapatabilirsiniz.`}
+        description={`Gününde kalan ${formatMoney(item.remainingAmount, item.currency)}. Tamamlamak tahsilatı engellemez; nakit, POS veya yeni link ile kapatabilirsiniz.`}
         confirmLabel="Yine de tamamla"
         pending={saving}
         onCancel={() => setConfirmComplete(false)}

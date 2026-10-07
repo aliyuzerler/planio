@@ -10,6 +10,7 @@ import {
   useCommissionRuleList,
 } from "@/lib/commissions/commission-queries";
 import { useServiceList } from "@/lib/services/service-queries";
+import { formatTry } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const controlClass =
@@ -105,7 +106,7 @@ export default function CommissionRulesPage() {
                           {" · "}
                           {rule.commissionType === "PERCENT"
                             ? `%${rule.commissionValue}`
-                            : `${rule.commissionValue} TRY`}
+                            : formatTry(rule.commissionValue)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">

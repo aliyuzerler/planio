@@ -12,6 +12,7 @@ import {
 } from "@xenior/validation";
 import { AppError } from "@/lib/api/errors";
 import { useServiceList } from "@/lib/services/service-queries";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const fieldClass =
@@ -122,7 +123,7 @@ export function CommissionForm({
               <option value="">Tüm hizmetler</option>
               {(services.data ?? []).map((service) => (
                 <option key={service.id} value={service.id}>
-                  {service.name} ({service.price} {service.currency})
+                  {service.name} ({formatMoney(service.price, service.currency)})
                 </option>
               ))}
             </select>

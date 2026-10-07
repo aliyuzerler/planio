@@ -15,6 +15,7 @@ import {
   useCommissionRuleDetail,
 } from "@/lib/commissions/commission-queries";
 import { useServiceList } from "@/lib/services/service-queries";
+import { formatTry } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const btnPrimary =
@@ -138,7 +139,7 @@ export default function CommissionRuleDetailPage() {
           <dd className="mt-1 text-sm text-[#1e3340]">
             {item.commissionType === "PERCENT"
               ? `%${item.commissionValue}`
-              : `${item.commissionValue} TRY`}
+              : formatTry(item.commissionValue)}
           </dd>
         </div>
         <div>

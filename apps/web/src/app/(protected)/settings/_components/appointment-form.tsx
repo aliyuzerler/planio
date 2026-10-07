@@ -13,6 +13,7 @@ import { useResourceList, useBusinessRole } from "@/lib/resources/resource-queri
 import { usePriceQuote } from "@/lib/campaigns/campaign-queries";
 import { useServiceList } from "@/lib/services/service-queries";
 import { useStaffList } from "@/lib/staff/staff-queries";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 
@@ -206,8 +207,8 @@ export function AppointmentForm({
           {quote.data ? (
             <div className="rounded-xl bg-[#b8e6df]/35 px-4 py-3 text-[13px] leading-5 text-[#2f5563] sm:col-span-2">
               {quote.data.campaignId
-                ? `Kampanya: ${quote.data.campaignName} · Liste ${quote.data.listPrice} ${quote.data.currency} · İndirim ${quote.data.discountAmount} · Ödenecek ${quote.data.payableAmount} ${quote.data.currency}`
-                : `Ücret: ${quote.data.payableAmount} ${quote.data.currency}`}
+                ? `Kampanya: ${quote.data.campaignName} · Liste ${formatMoney(quote.data.listPrice, quote.data.currency)} · İndirim ${formatMoney(quote.data.discountAmount, quote.data.currency)} · Ödenecek ${formatMoney(quote.data.payableAmount, quote.data.currency)}`
+                : `Ücret: ${formatMoney(quote.data.payableAmount, quote.data.currency)}`}
             </div>
           ) : null}
         </div>

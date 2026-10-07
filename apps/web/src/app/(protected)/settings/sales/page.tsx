@@ -6,6 +6,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { QueryState } from "@/components/ui/query-state";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useCanWriteCash, useSaleList } from "@/lib/ledger/ledger-queries";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const STATUS_LABEL = { OPEN: "Açık", SETTLED: "Kapandı" } as const;
@@ -75,7 +76,7 @@ export default function SalesPage() {
                       </p>
                       <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
                         {sale.lines[0]?.nameSnapshot ?? "Hizmet"} ·{" "}
-                        {sale.totalAmount} {sale.currency}
+                        {formatMoney(sale.totalAmount, sale.currency)}
                         {sale.remainingAmount !== "0.00"
                           ? ` · kalan ${sale.remainingAmount}`
                           : ""}

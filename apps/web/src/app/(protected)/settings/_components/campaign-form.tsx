@@ -12,6 +12,7 @@ import {
 } from "@xenior/validation";
 import { AppError } from "@/lib/api/errors";
 import { useServiceList } from "@/lib/services/service-queries";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const fieldClass =
@@ -168,7 +169,7 @@ export function CampaignForm({
                     }}
                     className="accent-[#7eb8c8]"
                   />
-                  {service.name} ({service.price} {service.currency})
+                  {service.name} ({formatMoney(service.price, service.currency)})
                 </label>
               ))}
             </div>

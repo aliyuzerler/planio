@@ -213,8 +213,8 @@ test("owner sees plans, pays with iyzico, and views subscription status", async 
   await expect(page.getByRole("heading", { name: "Abonelik" })).toBeVisible();
   await expect(page.getByText("Henüz doğrulanmış bir abonelik yok.")).toBeVisible();
   await expect(page.getByText("Starter · 6 aylık")).toBeVisible();
-  await expect(page.getByText("2495.00 TRY")).toBeVisible();
-  await expect(page.getByText("499.00 TRY")).toBeVisible();
+  await expect(page.getByText("₺2.495,00")).toBeVisible();
+  await expect(page.getByText("₺499,00")).toBeVisible();
   await page.getByRole("button", { name: "Planı seç" }).first().click();
   await page.getByLabel("T.C. kimlik no").fill("11111111110");
   await page.getByLabel("GSM").fill("+905551112233");

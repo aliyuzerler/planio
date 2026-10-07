@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PasswordInput } from "@/components/ui/password-input";
 import { AppError } from "@/lib/api/errors";
 import { acceptInvite, getSession } from "@/lib/auth/auth-api";
 import { useAuthStore } from "@/stores/auth-store";
@@ -100,9 +101,8 @@ export default function InvitePage() {
         {mode === "create" ? (
           <label className="flex flex-col gap-1 text-sm">
             Parola
-            <input
+            <PasswordInput
               required
-              type="password"
               minLength={12}
               maxLength={128}
               autoComplete="new-password"
@@ -114,9 +114,8 @@ export default function InvitePage() {
         ) : (
           <label className="flex flex-col gap-1 text-sm">
             Mevcut parolanız
-            <input
+            <PasswordInput
               required
-              type="password"
               maxLength={128}
               autoComplete="current-password"
               value={currentPassword}

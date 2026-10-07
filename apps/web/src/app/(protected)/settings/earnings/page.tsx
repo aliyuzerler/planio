@@ -6,6 +6,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { QueryState } from "@/components/ui/query-state";
 import { useCommissionEntries } from "@/lib/commissions/commission-queries";
 import { useAuthStore } from "@/stores/auth-store";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 
@@ -82,7 +83,7 @@ export default function EarningsPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <p className="text-[15px] font-semibold text-[#2f5563]">
-                        {entry.amount} {entry.currency}
+                        {formatMoney(entry.amount, entry.currency)}
                       </p>
                       {canPay ? (
                         entry.payoutExpenseId ? (

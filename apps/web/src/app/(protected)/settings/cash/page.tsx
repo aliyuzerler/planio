@@ -5,6 +5,7 @@ import { ArrowRight, Wallet } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
 import { QueryState } from "@/components/ui/query-state";
 import { useCanWriteCash, useCashAccountList } from "@/lib/ledger/ledger-queries";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const TYPE_LABEL = { CASH: "Nakit", BANK: "Banka" } as const;
@@ -80,7 +81,7 @@ export default function CashAccountsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="text-[15px] font-semibold text-[#2f5563]">
-                        {account.balance} {account.currency}
+                        {formatMoney(account.balance, account.currency)}
                       </p>
                       <span
                         className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${

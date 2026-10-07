@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PlanioLogo } from "@/components/brand/planio-logo";
+import { PasswordInput } from "@/components/ui/password-input";
 import { getSession, login } from "@/lib/auth/auth-api";
 import { AppError } from "@/lib/api/errors";
 import { useAuthStore } from "@/stores/auth-store";
@@ -80,9 +81,8 @@ export default function LoginPage() {
 
         <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#3d6b7a]">
           Parola
-          <input
+          <PasswordInput
             required
-            type="password"
             maxLength={128}
             autoComplete="current-password"
             value={password}

@@ -7,6 +7,7 @@ import { QueryState } from "@/components/ui/query-state";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useCanReadReports, useFinanceSummary } from "@/lib/reports/reports-queries";
 import type { FinanceSummaryReport } from "@xenior/types";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const fieldClass =
@@ -128,15 +129,15 @@ function ReportBody({ report }: { report: FinanceSummaryReport }) {
         <div className="grid gap-3 sm:grid-cols-3">
           <StatBlock
             label="Tahsilat"
-            value={`${report.cash.collectionsIn} ${report.currency}`}
+            value={formatMoney(report.cash.collectionsIn, report.currency)}
           />
           <StatBlock
             label="Gider"
-            value={`${report.cash.expensesOut} ${report.currency}`}
+            value={formatMoney(report.cash.expensesOut, report.currency)}
           />
           <StatBlock
             label="Net"
-            value={`${report.cash.net} ${report.currency}`}
+            value={formatMoney(report.cash.net, report.currency)}
           />
         </div>
         {report.cash.accounts.length > 0 ? (
@@ -155,7 +156,7 @@ function ReportBody({ report }: { report: FinanceSummaryReport }) {
                   </p>
                 </div>
                 <p className="text-[15px] font-semibold tabular-nums text-[#2f5563]">
-                  {account.balance} {report.currency}
+                  {formatMoney(account.balance, report.currency)}
                 </p>
               </li>
             ))}
@@ -173,7 +174,7 @@ function ReportBody({ report }: { report: FinanceSummaryReport }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <StatBlock
             label="Toplam alacak"
-            value={`${report.receivables.totalOutstanding} ${report.currency}`}
+            value={formatMoney(report.receivables.totalOutstanding, report.currency)}
           />
           <StatBlock
             label="Alacaklı müşteri"
@@ -192,7 +193,7 @@ function ReportBody({ report }: { report: FinanceSummaryReport }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <StatBlock
             label="Günlük prim"
-            value={`${report.commissions.totalAmount} ${report.currency}`}
+            value={formatMoney(report.commissions.totalAmount, report.currency)}
           />
           <StatBlock
             label="Satır"
@@ -218,7 +219,7 @@ function ReportBody({ report }: { report: FinanceSummaryReport }) {
                 {EXPENSE_LABEL[row.category] ?? row.category}
               </p>
               <p className="text-[15px] font-semibold tabular-nums text-[#2f5563]">
-                {row.amount} {report.currency}
+                {formatMoney(row.amount, report.currency)}
               </p>
             </li>
           ))}

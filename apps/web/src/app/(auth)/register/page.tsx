@@ -8,6 +8,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppError } from "@/lib/api/errors";
+import { PasswordInput } from "@/components/ui/password-input";
 import { PlanioLogo } from "@/components/brand/planio-logo";
 import { getSession, register } from "@/lib/auth/auth-api";
 import { useAuthStore } from "@/stores/auth-store";
@@ -173,14 +174,16 @@ function Field({
 }: InputHTMLAttributes<HTMLInputElement> & {
   label: string;
 }) {
+  const inputClass =
+    "rounded-lg border border-[#c5dde6] bg-[#F7FBFC] px-3.5 py-2.5 text-[15px] font-normal text-[#1e3340] outline-none transition placeholder:text-[#5a7380]/70 focus:border-[#7eb8c8] focus:bg-white focus:ring-2 focus:ring-[#7eb8c8]/25";
   return (
     <label className={`flex flex-col gap-1.5 text-[13px] font-semibold text-[#3d6b7a] ${className ?? ""}`}>
       {label}
-      <input
-        {...props}
-        required={required}
-        className="rounded-lg border border-[#c5dde6] bg-[#F7FBFC] px-3.5 py-2.5 text-[15px] font-normal text-[#1e3340] outline-none transition placeholder:text-[#5a7380]/70 focus:border-[#7eb8c8] focus:bg-white focus:ring-2 focus:ring-[#7eb8c8]/25"
-      />
+      {props.type === "password" ? (
+        <PasswordInput {...props} required={required} className={inputClass} />
+      ) : (
+        <input {...props} required={required} className={inputClass} />
+      )}
     </label>
   );
 }

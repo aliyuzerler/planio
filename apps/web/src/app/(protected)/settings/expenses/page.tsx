@@ -5,6 +5,7 @@ import { ArrowRight, Receipt } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
 import { QueryState } from "@/components/ui/query-state";
 import { useCanWriteCash, useExpenseList } from "@/lib/ledger/ledger-queries";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const CATEGORY_LABEL = {
@@ -82,7 +83,7 @@ export default function ExpensesPage() {
                     </p>
                   </div>
                   <p className="text-[15px] font-semibold text-[#2f5563]">
-                    {item.amount} {item.currency}
+                    {formatMoney(item.amount, item.currency)}
                   </p>
                 </li>
               ))}

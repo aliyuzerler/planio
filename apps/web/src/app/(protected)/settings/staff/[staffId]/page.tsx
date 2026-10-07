@@ -25,6 +25,7 @@ import {
 } from "@/lib/staff/staff-queries";
 import type { StaffHoursSettings } from "@xenior/types";
 import { useAuthStore } from "@/stores/auth-store";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const fieldClass =
@@ -203,7 +204,7 @@ export default function StaffDetailPage() {
                     key={entry.id}
                     className="px-4 py-3 text-sm text-[#1e3340]"
                   >
-                    {entry.serviceNameSnapshot} · {entry.amount} {entry.currency} ·{" "}
+                    {entry.serviceNameSnapshot} · {formatMoney(entry.amount, entry.currency)} ·{" "}
                     {entry.ruleNameSnapshot}
                   </li>
                 ))}

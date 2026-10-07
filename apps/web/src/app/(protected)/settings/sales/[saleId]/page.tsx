@@ -15,6 +15,7 @@ import {
   useSaleDetail,
 } from "@/lib/ledger/ledger-queries";
 import { useAuthStore } from "@/stores/auth-store";
+import { formatMoney } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 const fieldClass =
@@ -167,7 +168,7 @@ export default function SaleDetailPage() {
         <Detail label="Hizmet" value={item.lines[0]?.nameSnapshot ?? "—"} />
         <Detail
           label="Toplam"
-          value={`${item.totalAmount} ${item.currency}${
+          value={`${formatMoney(item.totalAmount, item.currency)}${
             item.discountAmountSnapshot !== "0.00"
               ? ` · liste ${item.listPriceSnapshot}, indirim ${item.discountAmountSnapshot}`
               : ""
@@ -175,11 +176,11 @@ export default function SaleDetailPage() {
         />
         <Detail
           label="Tahsil edilen"
-          value={`${item.collectedAmount} ${item.currency}`}
+          value={formatMoney(item.collectedAmount, item.currency)}
         />
         <Detail
           label="Kalan"
-          value={`${item.remainingAmount} ${item.currency}`}
+          value={formatMoney(item.remainingAmount, item.currency)}
         />
         <div className="sm:col-span-2">
           <dt className="text-[11px] font-semibold uppercase tracking-wider text-[#7eb8c8]">
@@ -206,7 +207,7 @@ export default function SaleDetailPage() {
           <ul className="divide-y divide-[#e4f0f4]">
             {item.collections.map((collection) => (
               <li key={collection.id} className="px-5 py-3 text-sm text-[#1e3340]">
-                {collection.amount} {item.currency} ·{" "}
+                {formatMoney(collection.amount, item.currency)} ·{" "}
                 {collection.method === "CARD"
                   ? "POS"
                   : collection.method === "LINK"

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@xenior/ui";
 import { AppError } from "@/lib/api/errors";
+import { formatMoney } from "@/lib/money";
 import {
   completePublicCheckout,
   getPublicCheckout,
@@ -66,7 +67,7 @@ export default function PublicPayPage() {
         {item.customerFirstName} · {item.serviceName}
       </p>
       <p className="mt-6 text-lg">
-        {PURPOSE_LABEL[item.purpose]} · {item.amount} {item.currency}
+        {PURPOSE_LABEL[item.purpose]} · {formatMoney(item.amount, item.currency)}
       </p>
       {item.status === "PAID" || paid ? (
         <p className="mt-4 text-sm text-emerald-800">Ödeme alındı. Teşekkürler.</p>

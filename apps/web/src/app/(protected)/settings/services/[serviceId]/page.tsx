@@ -10,6 +10,7 @@ import { PageFrame } from "@/components/ui/page-frame";
 import { useToast } from "@/components/ui/toast";
 import { AppError } from "@/lib/api/errors";
 import { updateService } from "@/lib/services/service-api";
+import { formatMoney } from "@/lib/money";
 import {
   useCanManageServices,
   useServiceDetail,
@@ -130,7 +131,7 @@ export default function ServiceDetailPage() {
         </div>
         <dl className="grid gap-4 p-5 sm:grid-cols-2">
           <Info label="Süre" value={`${item.durationMinutes} dakika`} />
-          <Info label="Fiyat" value={`${item.price} ${item.currency}`} />
+          <Info label="Fiyat" value={formatMoney(item.price, item.currency)} />
           <Info label="Açıklama" value={item.description ?? "—"} wide />
         </dl>
       </section>

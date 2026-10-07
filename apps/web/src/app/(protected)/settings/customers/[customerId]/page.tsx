@@ -19,7 +19,7 @@ import {
 import { useAuthStore } from "@/stores/auth-store";
 import { CustomerFiles } from "@/app/(protected)/settings/_components/customer-files";
 import { useCanReadCash, useLedgerEntries } from "@/lib/ledger/ledger-queries";
-import { formatTry } from "@/lib/money";
+import { formatMoney, formatTry } from "@/lib/money";
 
 const displayFont = { fontFamily: "var(--font-planio-display), sans-serif" } as const;
 
@@ -184,7 +184,7 @@ export default function CustomerDetailPage() {
                         {appointment.staff.firstName} {appointment.staff.lastName}
                       </p>
                       <p className="mt-1 text-[12px] font-semibold text-[#3d6b7a]">
-                        {appointment.servicePriceSnapshot} {appointment.currency}
+                        {formatMoney(appointment.servicePriceSnapshot, appointment.currency)}
                       </p>
                     </div>
                     <AppointmentStatusBadge status={appointment.status} />
@@ -222,7 +222,7 @@ export default function CustomerDetailPage() {
                       {entry.description}
                     </span>
                     <span className="font-semibold text-[#3d6b7a]">
-                      {entry.amount} TRY · bakiye {entry.balanceAfter}
+                      {formatTry(entry.amount)} · bakiye {formatTry(entry.balanceAfter)}
                     </span>
                   </li>
                 ))}

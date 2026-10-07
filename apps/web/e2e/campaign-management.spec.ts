@@ -159,7 +159,7 @@ test("owner creates a campaign and sees the discounted quote", async ({
   await page.goto("/settings/appointments/new");
   await page.getByLabel("Hizmet").selectOption(serviceId);
   await page.getByLabel("Başlangıç").fill("2033-06-15T10:00");
-  await expect(page.getByText(/Ödenecek 200.00 TRY/)).toBeVisible();
+  await expect(page.getByText(/Ödenecek ₺200,00/)).toBeVisible();
 });
 
 test("staff does not see campaign management in navigation", async ({

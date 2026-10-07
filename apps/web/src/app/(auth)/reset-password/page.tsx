@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { PasswordInput } from "@/components/ui/password-input";
 import { PlanioLogo } from "@/components/brand/planio-logo";
 import { AppError } from "@/lib/api/errors";
 import { resetPassword } from "@/lib/auth/auth-api";
@@ -68,9 +69,8 @@ export default function ResetPasswordPage() {
 
         <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#3d6b7a]">
           Yeni parola
-          <input
+          <PasswordInput
             required
-            type="password"
             minLength={12}
             maxLength={128}
             autoComplete="new-password"

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Megaphone } from "lucide-react";
 import { PageFrame } from "@/components/ui/page-frame";
 import { QueryState } from "@/components/ui/query-state";
+import { formatTry } from "@/lib/money";
 import {
   useCampaignList,
   useCanManageCampaigns,
@@ -97,7 +98,7 @@ export default function CampaignsPage() {
                         <p className="mt-0.5 truncate text-[13px] text-[#5a7380]">
                           {campaign.discountType === "PERCENT"
                             ? `%${campaign.discountValue}`
-                            : `${campaign.discountValue} TRY`}
+                            : formatTry(campaign.discountValue)}
                           {" · "}
                           {new Date(campaign.startsAt).toLocaleDateString(
                             "tr-TR",
