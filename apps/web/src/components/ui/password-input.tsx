@@ -18,7 +18,8 @@ export function PasswordInput({ className = "", ...props }: Props) {
       <button
         type="button"
         onClick={() => setVisible((value) => !value)}
-        aria-label={visible ? "Parolayı gizle" : "Parolayı göster"}
+        // "Parola" içermez: getByLabel("Parola") ile çakışmasın.
+        aria-label={visible ? "Şifreyi gizle" : "Şifreyi göster"}
         className="absolute inset-y-0 right-0 flex items-center px-3 text-[#7eb8c8] transition hover:text-[#3d6b7a]"
       >
         {visible ? (
