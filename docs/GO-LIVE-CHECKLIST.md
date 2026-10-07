@@ -49,6 +49,19 @@ Kontrol listesi:
 - [ ] `STORAGE_DRIVER=s3` + bucket/anahtarlar (dosyalar sunucu diskine yazılmaz)
 - [ ] SMTP/NetGSM/WhatsApp/FCM değerleri (isteğe bağlı ama e-posta doğrulaması için SMTP gerekli)
 - [ ] `DATABASE_URL` `connection_limit` parametresi içeriyor
+- [ ] `NEXT_PUBLIC_SITE_URL` web sitesinin kendi adresi (sitemap/robots/OG için)
+
+⚠️ **Test hesapları:** Geliştirme veritabanında şu test hesapları var —
+canlıya geçmeden önce SİLİN veya şifrelerini değiştirin:
+`test-owner@planio.local`, `test-staff@planio.local`,
+`test-admin@planio.local` (süper admin!). Temizlik SQL'i:
+
+```sql
+DELETE FROM "User" WHERE email LIKE '%@planio.local';
+-- Not: test işletmesi "Test Salonu" ve bağıl kayıtları için once
+-- cleanupTenantFixtures benzeri FK sıralı silme gerekir; en kolayı:
+-- canlıya TEMİZ bir veritabanı kurup migrasyonları sıfırdan uygulamak.
+```
 
 ## 3. TLS sertifikası
 
@@ -142,14 +155,31 @@ Cron (her gün 03:30 + S3'e kopya):
   panelinden manual sync; kapsayıcı logları:
   `docker compose logs api --since 30m`.
 
-## 10. Lansman sonrası öneriler (öncelik sırasıyla)
+## 10. Lansman sonrası yol haritası (öncelik sırasıyla)
 
+### Operasyonel (ilk hafta)
 1. **Sentry** (API + web + admin) ve bir uptime servisi (UptimeRobot /
    healthchecks.io) — şu an yok, ilk öncelik.
 2. Docker log rotasyonu (`/etc/docker/daemon.json` → `log-driver: json-file`,
    `max-size: 10m`, `max-file: 3`).
-3. Admin uygulaması için Playwright e2e seti.
-4. BUSINESS_OWNER ve SUPER_ADMIN için 2FA; sızan parola listesi kontrolü.
+3. Yük testi (k6/artillery) — özellikle randevu takvim çekimleri.
+
+### Güvenlik (ilk ay)
+4. BUSINESS_OWNER ve SUPER_ADMIN için **2FA**; sızan parola listesi kontrolü.
 5. Katı CSP (nonce tabanlı) — proxy katmanına taşınabilir.
-6. Yük testi (k6/artillery) — özellikle randevu takvim çekimleri.
-7. Web korunan sayfalarının RSC'ye göçü (oturum şelalesini azaltır).
+6. Admin uygulaması için Playwright e2e seti.
+
+### Ürün/kullanıcı iyileştirmeleri (ilk çeyrek)
+7. **Excel/PDF dışa aktarım** — raporlar, müşteri listesi, cari ekstre.
+   Salona en somut zaman kazandıracak özellik; muhasebeci teslimi kolaylaşır.
+8. **İlk kurulum sihirbazı** — yeni işletme için adım adım onboarding
+   (işletme bilgisi → personel daveti → hizmet tanımı → kasa → abonelik);
+   her adım tamamlanınca tick, eksikler dashboard'da checklist kartı.
+9. **WhatsApp randevu hatırlatıcı akışı** — NetGSM/WhatsApp sağlayıcı
+   altyapısı hazır; ürün tarafında şablon seçimi ve gönderim zamanlaması.
+10. **Müşteri self-servis randevu linki** — salonun sosyal medyaya
+    koyacağı bağlantıdan online randevu; dolu slotlar gizli, onay salonda.
+11. **Global arama (Ctrl+K komut paleti)** — müşteri/randevu/satışa
+    klavyeyle uçlar arası geçiş; yoğun resepsiyon kullanımı için.
+12. **Koyu tema** — akşam çalışan salonlar için; Tailwind token'ları hazır.
+13. Web korunan sayfalarının RSC'ye göçü (oturum şelalesini azaltır).
